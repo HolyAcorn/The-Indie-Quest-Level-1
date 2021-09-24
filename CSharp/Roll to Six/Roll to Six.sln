@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31613.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Roll to Six", "Roll to Six\Roll to Six.csproj", "{65B202E1-2428-4B38-94E2-209E4C2BC2DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65B202E1-2428-4B38-94E2-209E4C2BC2DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65B202E1-2428-4B38-94E2-209E4C2BC2DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65B202E1-2428-4B38-94E2-209E4C2BC2DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65B202E1-2428-4B38-94E2-209E4C2BC2DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF93B901-AECE-46E1-B49B-41D7BBCE0242}
+	EndGlobalSection
+EndGlobal
