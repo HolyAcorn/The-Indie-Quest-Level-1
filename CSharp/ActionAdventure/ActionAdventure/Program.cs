@@ -12,6 +12,8 @@ namespace ActionAdventure
         public int xPosition;
         public int yPosition;
         public ConsoleColor Color = ConsoleColor.Cyan;
+        public char charUnderPlayer;
+        public ConsoleColor underColor;
     }
     
     class Minotaur
@@ -20,6 +22,7 @@ namespace ActionAdventure
         public int xPosition;
         public int yPosition;
         public ConsoleColor Color = ConsoleColor.DarkYellow;
+        public bool Alive = true;
     }
         
     class Tree
@@ -39,6 +42,8 @@ namespace ActionAdventure
         static int height;
         static char[,] mapData = new char[width, height];
         static ConsoleColor wallColor = ConsoleColor.DarkGray;
+        
+
 
         static void Main(string[] args)
         {
@@ -62,6 +67,7 @@ namespace ActionAdventure
 
             Player player = new Player();
             player.Symbol = playerMatch.Groups[1].Value[0];
+            player.charUnderPlayer = ' ';
 
             Minotaur minotaur = new Minotaur();
             minotaur.Symbol = minotaurMatch.Groups[1].Value[0];
@@ -91,14 +97,18 @@ namespace ActionAdventure
             
             GenerateForest(tree,player);
             player.yPosition -= 2;
-            
-            
-            while (true)
+            DrawMap(player, minotaur, tree);
+
+            while (minotaur.Alive)
             {
-                DrawMap(player, minotaur, tree);
+                
                 ConsoleKeyInfo input = Console.ReadKey();
-                MovePlayer(input, player);
+                
+                MovePlayer(input, player,minotaur);
             }
+            Console.SetCursorPosition(mapData.GetLength(0), mapData.GetLength(1));
+            Console.WriteLine();
+            Console.WriteLine("You've beaten the Minotaur! Good job!");
             
             
 
@@ -134,7 +144,7 @@ namespace ActionAdventure
                 {
                     if (mapData[x,y] == player.Symbol)
                     {
-                        mapData[x, y] = ' ';
+                        Console.ForegroundColor = player.Color;
                         
                     }
                     else if (mapData[x,y] == minotaur.Symbol)
@@ -149,11 +159,7 @@ namespace ActionAdventure
                     {
                         Console.ForegroundColor = wallColor;
                     }
-                    if (mapData.GetLength(1) == player.xPosition && mapData.GetLength(0) == player.yPosition)
-                    {
-                        mapData[x, y] = player.Symbol;
-                        Console.ForegroundColor = player.Color;
-                    }
+
                     Console.Write(mapData[x,y]);
                 }
                 Console.WriteLine();
@@ -179,33 +185,83 @@ namespace ActionAdventure
             }
         }
 
-        static void MovePlayer(ConsoleKeyInfo input, Player player)
+        static void MovePlayer(ConsoleKeyInfo input, Player player, Minotaur minotaur)
         {
             if (input.Key == ConsoleKey.DownArrow)
             {
-                mapData[player.xPosition, player.yPosition] = ' ';
-                player.yPosition += 1;
+                if (mapData[player.xPosition,player.yPosition+1] == ' ' || mapData[player.xPosition, player.yPosition + 1] == minotaur.Symbol)
+                {
+                    if (mapData[player.xPosition, player.yPosition + 1] == minotaur.Symbol)
+                    {
+                        minotaur.Alive = false;
+                    }
+                    mapData[player.xPosition, player.yPosition] = player.charUnderPlayer;
+                    Console.SetCursorPosition(player.xPosition, player.yPosition);
+                    Console.Write(player.charUnderPlayer);
+                    player.yPosition += 1;
+                }
+                
             }
             if (input.Key == ConsoleKey.UpArrow)
             {
-                mapData[player.xPosition, player.yPosition] = ' ';
-                player.yPosition -= 1;
+                if (mapData[player.xPosition, player.yPosition - 1] == ' ' || mapData[player.xPosition, player.yPosition - 1] == minotaur.Symbol)
+                {
+                    if (mapData[player.xPosition, player.yPosition - 1] == minotaur.Symbol)
+                    {
+                        minotaur.Alive = false;
+                    }
+                    mapData[player.xPosition, player.yPosition] = player.charUnderPlayer;
+                    Console.SetCursorPosition(player.xPosition, player.yPosition);
+                    Console.Write(player.charUnderPlayer);
+                    player.yPosition -= 1;
+                }
+                
             }
             if (input.Key == ConsoleKey.LeftArrow)
             {
-                mapData[player.xPosition, player.yPosition] = ' ';
-                player.xPosition -= 1;
+                if (mapData[player.xPosition - 1, player.yPosition] == ' ' || mapData[player.xPosition - 1, player.yPosition] == minotaur.Symbol)
+                {
+                    if (mapData[player.xPosition - 1, player.yPosition] == minotaur.Symbol)
+                    {
+                        minotaur.Alive = false;
+                    }
+                    mapData[player.xPosition, player.yPosition] = player.charUnderPlayer;
+                    Console.SetCursorPosition(player.xPosition, player.yPosition);
+                    Console.Write(player.charUnderPlayer);
+                    player.xPosition -= 1;
+                }
+                    
             }
             if (input.Key == ConsoleKey.RightArrow)
             {
-                mapData[player.xPosition, player.yPosition] = ' ';
-                player.xPosition += 1;
+                if (mapData[player.xPosition + 1, player.yPosition] == ' '|| mapData[player.xPosition + 1, player.yPosition] == minotaur.Symbol)
+                {
+                    if (mapData[player.xPosition + 1, player.yPosition] == minotaur.Symbol)
+                    {
+                        minotaur.Alive = false;
+                    }
+                    mapData[player.xPosition, player.yPosition] = player.charUnderPlayer;
+                    Console.SetCursorPosition(player.xPosition, player.yPosition);
+                    Console.Write(player.charUnderPlayer);
+                    player.xPosition += 1;
+                    
+                }
             }
 
             Console.SetCursorPosition(player.xPosition, player.yPosition);
+            player.charUnderPlayer = mapData[player.xPosition, player.yPosition];
+            if (player.charUnderPlayer == player.Symbol)
+            {
+                player.charUnderPlayer = ' ';
+            }
+            Console.ForegroundColor = player.Color;
             Console.Write(player.Symbol);
-            Console.SetCursorPosition(player.xPosition, player.yPosition);
             
+            Console.SetCursorPosition(player.xPosition, player.yPosition);
+            mapData[player.xPosition, player.yPosition] = player.Symbol;
+
         }
+
+
     }
 }

@@ -134,7 +134,8 @@ namespace Algorithm_design_3
 
 
 
-
+                //I understand this is a hefty, clunky and outright ugly piece of code. I tried to make a method for this within a forloop
+                // But couldn't get it to work.
                 if (!IsRiverOrWall(x, 1, riverColor)
                     && !IsRiverOrWall(x, -1, riverColor)
                     && !IsRiverOrWall(x + 1, 0, riverColor)
