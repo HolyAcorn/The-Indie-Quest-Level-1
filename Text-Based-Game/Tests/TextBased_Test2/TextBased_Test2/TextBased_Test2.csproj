@@ -6,19 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Title.txt" />
-    <None Remove="Title2.txt" />
-    <None Remove="Title3.txt" />
+    <Compile Remove="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Title.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Program.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Title.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Title2.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Title3.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

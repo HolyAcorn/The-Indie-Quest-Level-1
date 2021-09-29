@@ -7,8 +7,10 @@ namespace TextBased_Test2
 {
     class Program
     {
-        static string filepath = "Title3.txt";
-        static string[] title = File.ReadAllLines(filepath);
+        static string titleFile = "Title.txt";
+        static string tileFile = "Tiles.txt";
+        static string[] title = File.ReadAllLines(titleFile);
+        static string[] tilesAray = File.ReadAllLines(tilesFile);
         static ConsoleColor[,] titleColorData = new ConsoleColor[title.Length, title[1].Length];
         static char[,] titleCharData = new char[title.Length, title[1].Length];
         static void Main(string[] args)
@@ -55,14 +57,9 @@ namespace TextBased_Test2
                         }
                         else
                         {
-                            if (c == 's' || c == '=')
-                            {
-                                Console.ForegroundColor = bgColor;
-                            }
-                            else
-                            {
-                                Console.ForegroundColor = titleTextColor;
-                            }
+  
+                           Console.ForegroundColor = titleTextColor;
+                            
 
                             if (edgeCounter >= 3)
                             {
@@ -92,32 +89,12 @@ namespace TextBased_Test2
                         }
                         else
                         {
-                            if (c == 's' || c == '=')
-                            {
-                                Console.ForegroundColor = bgColor;
-                                title[i].Replace('s', '|');
-                                title[i].Replace('=', '_');
-                            }
-                            else
-                            {
-                                Console.ForegroundColor = titleTextColor;
-                            }
+                            Console.ForegroundColor = titleTextColor;
                         }
                     }
 
-
-                    if (c == 's' || c == '=')
-                    {
-                        string tempStr = title[i];
-                        tempStr = title[i].Replace('s', '|');
-                        tempStr = tempStr.Replace('=', '_');
-                        char tempC = tempStr.ToCharArray()[cIndex - 1];
-                        Console.Write(tempC);
-                    }
-                    else
-                    {
                         Console.Write(c);
-                    }
+                    
 
                     Thread.Sleep(0);
                     cIndex++;
