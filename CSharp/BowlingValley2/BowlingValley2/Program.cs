@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace BowlingValley
 {
@@ -25,6 +26,10 @@ namespace BowlingValley
             Random random = new Random();
             int totalFrames = 10;
 
+
+            List<int> displayPinsOG = new List<int> {7,8,9,10,4,5,6,2,3,1};
+            List<int> displayPins = new List<int> (displayPinsOG);
+
             int[] pointsGained = new int[totalFrames];
             int[] frameScores = new int[totalFrames];
             bool isStrike = false;
@@ -45,7 +50,7 @@ namespace BowlingValley
                         secondRoll = random.Next(0, 11);
                     }
 
-                    if (secondRoll == 10 || secondRoll + firstRoll == 10)
+                    if (firstRoll == 10 || secondRoll == 10 || secondRoll + firstRoll == 10)
                     {
                         int thirdRoll = random.Next(0, 11);
                         knockedPins[i] = new int[] { firstRoll, secondRoll, thirdRoll };
@@ -143,7 +148,102 @@ namespace BowlingValley
                 }
                 Console.WriteLine();
             }
-            AddScore('!', 9,knockedPins[2][0]);
+            int inputCounter = 0;
+            int frame = 0;
+            Console.WriteLine("Press enter to roll!");
+            Console.WriteLine();
+            KnockAndDisplayPins(displayPinsOG);
+            while (frame < 10)
+            { 
+                for (int i = 0; i < 3; i++)
+                {
+                    
+                    ConsoleKeyInfo input = Console.ReadKey();
+                    
+                    if (input.Key == ConsoleKey.Enter)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                for (int pin = 0; pin < knockedPins[frame][0]; pin++)
+                                {
+                                    int randomPin = random.Next(1,11);
+                                    displayPins.Remove(randomPin);
+                                    KnockAndDisplayPins(displayPins);
+                                }
+                                AddNumber('?', frame, knockedPins[frame][0]);
+                                break;
+                            case 1:
+
+                                if (IsStrike(knockedPins[frame][0]))
+                                {
+                                    AddNumber('!', frame, 0, knockedPins[frame][0]);
+                                }
+                                else
+                                {
+                                    for (int pin = 0; pin < knockedPins[frame][1]; pin++)
+                                    {
+                                        int randomPin = random.Next(1, 11);
+                                        displayPins.Remove(randomPin);
+                                        KnockAndDisplayPins(displayPins);
+                                    }
+                                    AddNumber('!', frame, knockedPins[frame][1], knockedPins[frame][0]);
+                                }
+
+                                if (frame != 0 && (IsStrike(knockedPins[frame - 1][0]) || IsSpare(knockedPins[frame - 1][1], knockedPins[frame - 1][0])))
+                                {
+                                    foreach (char scoreChar in new string(":;-"))
+                                    {
+                                        AddNumber(scoreChar, frame-1, frameScores[frame - 1]);
+                                    }
+                                }
+                                if (!IsStrike(knockedPins[frame][0]) && !IsSpare(knockedPins[frame][1], knockedPins[frame][0]))
+                                {
+                                    foreach (char scoreChar in new string(":;-"))
+                                    {
+                                        AddNumber(scoreChar, frame, frameScores[frame]);
+                                    }
+                                }
+                                break;
+                            case 2:
+                                if (frame == totalFrames - 1)
+                                {
+                                    if (IsStrike(knockedPins[frame][0]))
+                                    {
+  
+                                        AddNumber('#', frame, knockedPins[frame][2]);
+                                    }
+                                    
+                                    else
+                                    {
+                                        if (IsSpare(knockedPins[frame][0], knockedPins[frame][1]))
+                                        {
+                                            for (int pin = 0; pin < knockedPins[frame][2]; pin++)
+                                            {
+                                                int randomPin = random.Next(1, 11);
+                                                displayPins.Remove(randomPin);
+                                                KnockAndDisplayPins(displayPins);
+                                            }
+                                            
+                                            AddNumber('#', frame, knockedPins[frame][2]);
+                                        }
+                                        
+                                    }
+                                    foreach (char scoreChar in new string(":;-"))
+                                    {
+                                        AddNumber(scoreChar, frame, frameScores[frame]);
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                frame++;
+                
+                
+            }
             Console.WriteLine();
 
             
@@ -371,24 +471,25 @@ namespace BowlingValley
             }
             return display;
         }
-        static void AddScore(char writer, int frame, int roll, int previousRoll = 0)
+        static void AddNumber(char writer, int frame, int number, int previousNumber = 0)
+        
         {
             char display = ' ';
-            int spareCounter = previousRoll;
+            int spareCounter = previousNumber;
             switch (writer)
             {
                 case '?':
-                    spareCounter += roll;
-                    if (roll == 0)
+                    spareCounter += number;
+                    if (number == 0)
                     {
                         display = '-';
                     }
                     else
                     {
-                        display = roll.ToString()[0];
+                        display = number.ToString()[0];
 
                     }
-                    if (roll == 10)
+                    if (IsStrike(number))
                     {
                         display = 'X';
 
@@ -398,39 +499,166 @@ namespace BowlingValley
 
                     break;
                 case '!':
-                    if (spareCounter == 10)
+                    
+                    
+                    if (IsStrike(previousNumber) && frame != 9)
                     {
                         display = ' ';
                     }
-                    spareCounter += roll;
-                    if (roll == 0)
+                    
+                    else
+                    {
+                        spareCounter += number;
+                        if (IsSpare(number, previousNumber))
+                        {
+                            display = '/';
+
+                        }
+                        else
+                        {
+                            if (number == 0)
+                            {
+                                display = '-';
+                            }
+                            else
+                            {
+                                display = number.ToString()[0];
+                            }
+                        }
+                    }
+                    
+                    
+                    Console.SetCursorPosition(6 * frame + 5, 1);
+                    break;
+                case '#':
+                    if (IsStrike(previousNumber))
+                    {
+                        display = ' ';
+                    }
+                    spareCounter += number;
+                    if (number == 0)
                     {
                         display = '-';
                     }
                     else
                     {
-                        display = roll.ToString()[0];
+                        display = number.ToString()[0];
                     }
-                    if (spareCounter == 10)
+                    if (IsSpare(number, previousNumber)) 
                     {
                         display = '/';
-
                     }
-                    Console.SetCursorPosition(6 * frame + 5, 1);
-                    break;
-                case '#':
+                    Console.SetCursorPosition(6 * 9+ 7, 1);
                     break;
                 case ':':
+                    if (number > 99)
+                    {
+                        display = number.ToString()[0];
+
+                    }
+                    Console.SetCursorPosition(6 * frame + 2, 3);
                     break;
                 case ';':
+                    if (number > 9)
+                    {
+                        if (number < 99)
+                        {
+                            display = number.ToString()[0];
+                        }
+                        else
+                        {
+                            display = number.ToString()[1];
+                        }
+                    }
+                    Console.SetCursorPosition(6 * frame + 3, 3);
                     break;
                 case '-':
+                    if (number > 9)
+                    {
+                        if (number > 99)
+                        {
+                            display = number.ToString()[2];
+                        }
+                        else
+                        {
+                            display = number.ToString()[1];
+                        }
+                    }
+                    else
+                    {
+                        display = number.ToString()[0];
+                    }
+                    Console.SetCursorPosition(6 * frame + 4, 3);
                     break;
                 default:
                     break;
             }
             Console.Write(display);
             Console.SetCursorPosition(0, 7);
+        }
+
+        static bool IsSpare(int number1, int number2)
+        {
+            bool isSpare = false;
+            if (number1 + number2 == 10)
+            {
+                isSpare = true;
+            }
+            return isSpare;
+        }
+
+        static bool IsStrike(int number)
+        {
+            bool isStrike = false;
+            if (number == 10)
+            {
+                isStrike = true;
+            }
+            return isStrike;
+        }
+
+        static void KnockAndDisplayPins(List<int> knockedPins)
+        {
+            char pinSymbol = 'O';
+            string spacing = "   ";
+
+            Console.SetCursorPosition(0, 6);
+            for (int i = 0; i < 7; i++)
+            {
+                Console.Write("                    ");
+                Console.WriteLine();
+            }
+            Console.SetCursorPosition(0, 6);
+            foreach (int pin in knockedPins)
+            {
+                if (pin == 7)
+                {
+                    Console.Write($"{pinSymbol}");
+                }
+                else if (pin == 4)
+                {
+                    Console.Write($"  {pinSymbol}");
+                }
+                else if (pin == 2)
+                {
+                    Console.Write($" {spacing}{pinSymbol}");
+                }
+                else if (pin == 1)
+                {
+                    Console.Write(spacing + spacing + pinSymbol);
+                }
+                else
+                {
+                    Console.Write(spacing+pinSymbol);
+                }
+
+                if (pin == 10 || pin == 6 || pin == 3)
+                {
+                    Console.WriteLine();
+                }
+
+                
+            }
         }
     }
 }
