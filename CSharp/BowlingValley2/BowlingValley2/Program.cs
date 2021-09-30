@@ -58,96 +58,9 @@ namespace BowlingValley
 
             int[][] knockedPins = new int[totalFrames][];
 
-            for (int i = 0; i < knockedPins.Length; i++)
-            {
-                if (i == 9)
-                {
-                    int firstRoll = random.Next(0, 11);
-                    int secondRoll = random.Next(0, 11 - firstRoll);
+                
 
-                    if (firstRoll == 10)
-                    {
-                        secondRoll = random.Next(0, 11);
-                    }
-
-                    if (firstRoll == 10 || secondRoll == 10 || secondRoll + firstRoll == 10)
-                    {
-                        int thirdRoll = random.Next(0, 11);
-                        knockedPins[i] = new int[] { firstRoll, secondRoll, thirdRoll };
-
-                        pointsGained[i] += thirdRoll;
-                    }
-                    else
-                    {
-                        knockedPins[i] = new int[] { firstRoll, secondRoll };
-
-
-                    }
-                    pointsGained[i] += firstRoll;
-                    pointsGained[i] += secondRoll;
-
-
-                }
-                else
-                {
-                    int firstRoll = random.Next(0, 11);
-                    int secondRoll = random.Next(0, 11 - firstRoll);
-                    pointsGained[i] += firstRoll;
-                    pointsGained[i] += secondRoll;
-                    if (isStrike2)
-                    {
-                        if (i + 1 < knockedPins.Length)
-                        {
-                            frameScores[i - 2] += firstRoll;
-                            pointsGained[i - 2] += firstRoll;
-                        }
-                        isStrike2 = false;
-                    }
-                    if (isStrike)
-                    {
-                        frameScores[i - 1] += firstRoll;
-                        pointsGained[i - 1] += firstRoll;
-                        isStrike2 = true;
-                        isStrike = false;
-                    }
-
-                    if (isSpare)
-                    {
-                        frameScores[i - 1] += firstRoll;
-                        pointsGained[i - 1] += firstRoll;
-                        isSpare = false;
-                    }
-                    if (firstRoll == 10)
-                    {
-
-                        knockedPins[i] = new int[] { firstRoll };
-
-                        if (i < knockedPins.Length)
-                        {
-                            isStrike = true;
-                        }
-                    }
-                    else
-                    {
-                        knockedPins[i] = new int[] { firstRoll, secondRoll };
-                        if (firstRoll + secondRoll == 10)
-                        {
-
-                            isSpare = true;
-
-                        }
-                    }
-                }
-                if (i > 0)
-                {
-                    frameScores[i] = pointsGained[i] + frameScores[i - 1];
-                }
-                else
-                {
-                    frameScores[i] = pointsGained[i];
-                }
-
-            }
+            
             Console.ForegroundColor = displayColor;
             for (int y = 0; y < 5; y++)
             {
@@ -172,23 +85,123 @@ namespace BowlingValley
             int frame = 0;
             Console.WriteLine();
             Console.ForegroundColor = numberColor;
-            Console.WriteLine("Enter where to roll the ball (1-7):");
+            
             
             
             while (frame < 10)
             {
-                //Display Frame here
+                
                 Console.ForegroundColor = frameColor;
                 Console.WriteLine(FrameDisplay(frame));
                 Console.ForegroundColor = numberColor;
                 displayPins = new List<Pin>(displayPinsOG);
                 KnockAndDisplayPins(displayPins);
+                bool takeInput = true;
                 for (int i = 0; i < 3; i++)
                 {
-                    //int input = Convert.ToInt32(Console.ReadLine());
-                    ConsoleKeyInfo enterInput = Console.ReadKey();
-                    
-                    if (enterInput.Key == ConsoleKey.Enter)
+                    int input = 0;
+                    ConsoleKeyInfo enterInput = new ConsoleKeyInfo();
+
+                    if (takeInput)
+                    {
+                        Console.SetCursorPosition(0, 11);
+                        Console.WriteLine("Enter where to roll the ball (1-7):");
+                        input = Convert.ToInt32(Console.ReadLine());
+                    }
+                    else
+                    {
+                        Console.SetCursorPosition(0, 11);
+                        Console.WriteLine("Press enter to continue:                ");
+                        enterInput = Console.ReadKey();
+                    }
+                    if (frame == 9)
+                    {
+                        int firstRoll = random.Next(0, 11);
+                        int secondRoll = random.Next(0, 11 - firstRoll);
+
+                        if (firstRoll == 10)
+                        {
+                            secondRoll = random.Next(0, 11);
+                        }
+
+                        if (firstRoll == 10 || secondRoll == 10 || secondRoll + firstRoll == 10)
+                        {
+                            int thirdRoll = random.Next(0, 11);
+                            knockedPins[frame] = new int[] { firstRoll, secondRoll, thirdRoll };
+
+                            pointsGained[frame] += thirdRoll;
+                        }
+                        else
+                        {
+                            knockedPins[frame] = new int[] { firstRoll, secondRoll };
+
+
+                        }
+                        pointsGained[frame] += firstRoll;
+                        pointsGained[frame] += secondRoll;
+
+
+                    }
+                    else
+                    {
+                        int firstRoll = random.Next(0, 11);
+                        int secondRoll = random.Next(0, 11 - firstRoll);
+                        pointsGained[frame] += firstRoll;
+                        pointsGained[frame] += secondRoll;
+                        if (isStrike2)
+                        {
+                            if (frame + 1 < knockedPins.Length)
+                            {
+                                frameScores[frame - 2] += firstRoll;
+                                pointsGained[frame - 2] += firstRoll;
+                            }
+                            isStrike2 = false;
+                        }
+                        if (isStrike)
+                        {
+                            frameScores[frame - 1] += firstRoll;
+                            pointsGained[frame - 1] += firstRoll;
+                            isStrike2 = true;
+                            isStrike = false;
+                        }
+
+                        if (isSpare)
+                        {
+                            frameScores[frame - 1] += firstRoll;
+                            pointsGained[frame - 1] += firstRoll;
+                            isSpare = false;
+                        }
+                        if (firstRoll == 10)
+                        {
+
+                            knockedPins[frame] = new int[] { firstRoll };
+
+                            if (i < knockedPins.Length)
+                            {
+                                isStrike = true;
+                            }
+                        }
+                        else
+                        {
+                            knockedPins[frame] = new int[] { firstRoll, secondRoll };
+                            if (firstRoll + secondRoll == 10)
+                            {
+
+                                isSpare = true;
+
+                            }
+                        }
+                    }
+                    if (frame > 0)
+                    {
+                        frameScores[frame] = pointsGained[frame] + frameScores[frame - 1];
+                    }
+                    else
+                    {
+                        frameScores[frame] = pointsGained[frame];
+                    }
+
+                    if (enterInput.Key == ConsoleKey.Enter || (input < 8 && input > 0))
                     {
                         switch (i)
                         {
@@ -200,6 +213,7 @@ namespace BowlingValley
                                     KnockAndDisplayPins(displayPins);
                                 }
                                 AddNumber('?', frame, knockedPins[frame][0]);
+                                takeInput = true;
                                 break;
                             case 1:
 
@@ -231,6 +245,14 @@ namespace BowlingValley
                                     {
                                         AddNumber(scoreChar, frame, frameScores[frame]);
                                     }
+                                }
+                                if (frame > 8)
+                                {
+                                    takeInput = true;
+                                }
+                                else
+                                {
+                                    takeInput = false;
                                 }
                                 break;
                             case 2:
@@ -704,6 +726,122 @@ namespace BowlingValley
             }
             finalString += $"FRAME {frame+1}";
             return finalString;
+        }
+
+        static int GetKnockAngle(int input, List<Pin> standingPins)
+        {
+            int choice = 0;
+            switch (input)
+            {
+                case 1:
+                    if (IsPinStanding(7,standingPins))
+                    {
+                        choice = 7;
+                    }
+                    else
+                    {
+                        choice = 0;
+                    }
+                    break;
+                case 2:
+                    if(IsPinStanding(4, standingPins))
+                    {
+                        choice = 4;
+                    }
+                    else
+                    {
+                        choice = 0;
+                    }
+                    break;
+                case 3:
+                    if (IsPinStanding(2,standingPins))
+                    {
+                        choice = 2;
+                    }
+                    else
+                    {
+                        if (IsPinStanding(8,standingPins))
+                        {
+                            choice = 8;
+                        }
+                        else
+                        {
+                            choice = 0;
+                        }
+                    }
+                    break;
+                case 4:
+                    if (IsPinStanding(1, standingPins))
+                    {
+                        choice = 1;
+                    }
+                    else
+                    {
+                        if (IsPinStanding(5, standingPins))
+                        {
+                            choice = 5;
+                        }
+                        else
+                        {
+                            choice = 0;
+                        }
+                    }
+                    break;
+                case 5:
+                    if (IsPinStanding(3, standingPins))
+                    {
+                        choice = 3;
+                    }
+                    else
+                    {
+                        if (IsPinStanding(9, standingPins))
+                        {
+                            choice = 9;
+                        }
+                        else
+                        {
+                            choice = 0;
+                        }
+                    }
+                    break;
+                case 6:
+                    if (IsPinStanding(6, standingPins))
+                    {
+                        choice = 6;
+                    }
+                    else
+                    {
+                        choice = 0;
+                    }
+                    break;
+                case 7:
+                    if (IsPinStanding(10, standingPins))
+                    {
+                        choice = 10;
+                    }
+                    else
+                    {
+                        choice = 0;
+                    }
+                    break;
+                    
+            }
+            return choice;
+
+            static bool IsPinStanding(int input, List<Pin> standingPins)
+            {
+                bool isTrue = false;
+                foreach (Pin pin in standingPins)
+                {
+                    if (pin.Number == input)
+                    {
+                        isTrue = true;
+                        break;
+                    }
+                }
+                return isTrue;
+            }
+
         }
     }
 }
