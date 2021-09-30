@@ -172,8 +172,8 @@ namespace BowlingValley
             int frame = 0;
             Console.WriteLine();
             Console.ForegroundColor = numberColor;
-            Console.WriteLine("Press enter to roll!");
-            Console.WriteLine();
+            Console.WriteLine("Enter where to roll the ball (1-7):");
+            
             
             while (frame < 10)
             {
@@ -186,9 +186,9 @@ namespace BowlingValley
                 for (int i = 0; i < 3; i++)
                 {
                     
-                    ConsoleKeyInfo input = Console.ReadKey();
+                    ConsoleKeyInfo enterInput = Console.ReadKey();
                     
-                    if (input.Key == ConsoleKey.Enter)
+                    if (enterInput.Key == ConsoleKey.Enter)
                     {
                         switch (i)
                         {
