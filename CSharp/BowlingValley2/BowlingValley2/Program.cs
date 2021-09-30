@@ -58,9 +58,99 @@ namespace BowlingValley
 
             int[][] knockedPins = new int[totalFrames][];
 
-                
+            for (int i = 0; i < knockedPins.Length; i++)
+            {
+                if (i == 9)
+                {
+                    int firstRoll = random.Next(0, 11);
+                    int secondRoll = random.Next(0, 11 - firstRoll);
 
-            
+                    if (firstRoll == 10)
+                    {
+                        secondRoll = random.Next(0, 11);
+                    }
+
+                    if (firstRoll == 10 || secondRoll == 10 || secondRoll + firstRoll == 10)
+                    {
+                        int thirdRoll = random.Next(0, 11);
+                        knockedPins[i] = new int[] { firstRoll, secondRoll, thirdRoll };
+
+                        pointsGained[i] += thirdRoll;
+                    }
+                    else
+                    {
+                        knockedPins[i] = new int[] { firstRoll, secondRoll };
+
+
+                    }
+                    pointsGained[i] += firstRoll;
+                    pointsGained[i] += secondRoll;
+
+
+                }
+                else
+                {
+                    int firstRoll = random.Next(0, 11);
+                    int secondRoll = random.Next(0, 11 - firstRoll);
+                    pointsGained[i] += firstRoll;
+                    pointsGained[i] += secondRoll;
+                    if (isStrike2)
+                    {
+                        if (i + 1 < knockedPins.Length)
+                        {
+                            frameScores[i - 2] += firstRoll;
+                            pointsGained[i - 2] += firstRoll;
+                        }
+                        isStrike2 = false;
+                    }
+                    if (isStrike)
+                    {
+                        frameScores[i - 1] += firstRoll;
+                        pointsGained[i - 1] += firstRoll;
+                        isStrike2 = true;
+                        isStrike = false;
+                    }
+
+                    if (isSpare)
+                    {
+                        frameScores[i - 1] += firstRoll;
+                        pointsGained[i - 1] += firstRoll;
+                        isSpare = false;
+                    }
+                    if (firstRoll == 10)
+                    {
+
+                        knockedPins[i] = new int[] { firstRoll };
+
+                        if (i < knockedPins.Length)
+                        {
+                            isStrike = true;
+                        }
+                    }
+                    else
+                    {
+                        knockedPins[i] = new int[] { firstRoll, secondRoll };
+                        if (firstRoll + secondRoll == 10)
+                        {
+
+                            isSpare = true;
+
+                        }
+                    }
+                }
+                if (i > 0)
+                {
+                    frameScores[i] = pointsGained[i] + frameScores[i - 1];
+                }
+                else
+                {
+                    frameScores[i] = pointsGained[i];
+                }
+
+
+            }
+
+
             Console.ForegroundColor = displayColor;
             for (int y = 0; y < 5; y++)
             {
@@ -114,92 +204,7 @@ namespace BowlingValley
                         Console.WriteLine("Press enter to continue:                ");
                         enterInput = Console.ReadKey();
                     }
-                    if (frame == 9)
-                    {
-                        int firstRoll = random.Next(0, 11);
-                        int secondRoll = random.Next(0, 11 - firstRoll);
-
-                        if (firstRoll == 10)
-                        {
-                            secondRoll = random.Next(0, 11);
-                        }
-
-                        if (firstRoll == 10 || secondRoll == 10 || secondRoll + firstRoll == 10)
-                        {
-                            int thirdRoll = random.Next(0, 11);
-                            knockedPins[frame] = new int[] { firstRoll, secondRoll, thirdRoll };
-
-                            pointsGained[frame] += thirdRoll;
-                        }
-                        else
-                        {
-                            knockedPins[frame] = new int[] { firstRoll, secondRoll };
-
-
-                        }
-                        pointsGained[frame] += firstRoll;
-                        pointsGained[frame] += secondRoll;
-
-
-                    }
-                    else
-                    {
-                        int firstRoll = random.Next(0, 11);
-                        int secondRoll = random.Next(0, 11 - firstRoll);
-                        pointsGained[frame] += firstRoll;
-                        pointsGained[frame] += secondRoll;
-                        if (isStrike2)
-                        {
-                            if (frame + 1 < knockedPins.Length)
-                            {
-                                frameScores[frame - 2] += firstRoll;
-                                pointsGained[frame - 2] += firstRoll;
-                            }
-                            isStrike2 = false;
-                        }
-                        if (isStrike)
-                        {
-                            frameScores[frame - 1] += firstRoll;
-                            pointsGained[frame - 1] += firstRoll;
-                            isStrike2 = true;
-                            isStrike = false;
-                        }
-
-                        if (isSpare)
-                        {
-                            frameScores[frame - 1] += firstRoll;
-                            pointsGained[frame - 1] += firstRoll;
-                            isSpare = false;
-                        }
-                        if (firstRoll == 10)
-                        {
-
-                            knockedPins[frame] = new int[] { firstRoll };
-
-                            if (i < knockedPins.Length)
-                            {
-                                isStrike = true;
-                            }
-                        }
-                        else
-                        {
-                            knockedPins[frame] = new int[] { firstRoll, secondRoll };
-                            if (firstRoll + secondRoll == 10)
-                            {
-
-                                isSpare = true;
-
-                            }
-                        }
-                    }
-                    if (frame > 0)
-                    {
-                        frameScores[frame] = pointsGained[frame] + frameScores[frame - 1];
-                    }
-                    else
-                    {
-                        frameScores[frame] = pointsGained[frame];
-                    }
+                    
 
                     if (enterInput.Key == ConsoleKey.Enter || (input < 8 && input > 0))
                     {
