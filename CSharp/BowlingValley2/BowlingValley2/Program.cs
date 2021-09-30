@@ -13,6 +13,12 @@ namespace BowlingValley
         {
             public int Number;
         }
+
+        static ConsoleColor displayColor = ConsoleColor.DarkGray;
+        static ConsoleColor numberColor = ConsoleColor.Cyan;
+        static ConsoleColor frameColor = ConsoleColor.Magenta;
+        static ConsoleColor pinColor = ConsoleColor.White;
+
         static void Main(string[] args)
         {
 
@@ -31,6 +37,7 @@ namespace BowlingValley
             Random random = new Random();
             int totalFrames = 10;
 
+            
 
             List<Pin> displayPinsOG = new List<Pin> {};
 
@@ -141,7 +148,7 @@ namespace BowlingValley
                 }
 
             }
-
+            Console.ForegroundColor = displayColor;
             for (int y = 0; y < 5; y++)
             {
                 for (int i = 0; i < totalFrames; i++)
@@ -163,11 +170,17 @@ namespace BowlingValley
             }
             int inputCounter = 0;
             int frame = 0;
+            Console.WriteLine();
+            Console.ForegroundColor = numberColor;
             Console.WriteLine("Press enter to roll!");
             Console.WriteLine();
             
             while (frame < 10)
             {
+                //Display Frame here
+                Console.ForegroundColor = frameColor;
+                Console.WriteLine(FrameDisplay(frame));
+                Console.ForegroundColor = numberColor;
                 displayPins = new List<Pin>(displayPinsOG);
                 KnockAndDisplayPins(displayPins);
                 for (int i = 0; i < 3; i++)
@@ -491,6 +504,7 @@ namespace BowlingValley
         {
             char display = ' ';
             int spareCounter = previousNumber;
+            int displayYStart = 1;
             switch (writer)
             {
                 case '?':
@@ -510,7 +524,7 @@ namespace BowlingValley
 
                     }
 
-                    Console.SetCursorPosition(6 * frame + 3, 1);
+                    Console.SetCursorPosition(6 * frame + 3, displayYStart);
 
                     break;
                 case '!':
@@ -543,7 +557,7 @@ namespace BowlingValley
                     }
                     
                     
-                    Console.SetCursorPosition(6 * frame + 5, 1);
+                    Console.SetCursorPosition(6 * frame + 5, displayYStart);
                     break;
                 case '#':
                     if (IsStrike(previousNumber))
@@ -563,7 +577,7 @@ namespace BowlingValley
                     {
                         display = '/';
                     }
-                    Console.SetCursorPosition(6 * 9+ 7, 1);
+                    Console.SetCursorPosition(6 * 9+ 7, displayYStart);
                     break;
                 case ':':
                     if (number > 99)
@@ -571,7 +585,7 @@ namespace BowlingValley
                         display = number.ToString()[0];
 
                     }
-                    Console.SetCursorPosition(6 * frame + 2, 3);
+                    Console.SetCursorPosition(6 * frame + 2, displayYStart+2);
                     break;
                 case ';':
                     if (number > 9)
@@ -585,7 +599,7 @@ namespace BowlingValley
                             display = number.ToString()[1];
                         }
                     }
-                    Console.SetCursorPosition(6 * frame + 3, 3);
+                    Console.SetCursorPosition(6 * frame + 3, displayYStart+2);
                     break;
                 case '-':
                     if (number > 9)
@@ -603,11 +617,12 @@ namespace BowlingValley
                     {
                         display = number.ToString()[0];
                     }
-                    Console.SetCursorPosition(6 * frame + 4, 3);
+                    Console.SetCursorPosition(6 * frame + 4, displayYStart+2);
                     break;
                 default:
                     break;
             }
+            Console.ForegroundColor = numberColor;
             Console.Write(display);
             Console.SetCursorPosition(0, 7);
         }
@@ -637,7 +652,7 @@ namespace BowlingValley
             char pinSymbol = 'O';
             string spacing = "   ";
             string[] rows = new string[4];
-            Console.SetCursorPosition(0, 6);
+            Console.SetCursorPosition(0, 7);
             for (int i = 0; i < 7; i++)
             {
                 Console.Write("                    ");
@@ -645,7 +660,7 @@ namespace BowlingValley
             }
             rows[1] = "  ";
             rows[2] = $" {spacing}";
-            Console.SetCursorPosition(0, 6);
+            Console.SetCursorPosition(0, 7);
             foreach (Pin pin in knockedPins)
             {
                 if (pin.Number >= 7)
@@ -668,10 +683,25 @@ namespace BowlingValley
                 
                 
             }
+            Console.ForegroundColor = pinColor;
             foreach (string row in rows)
             {
                 Console.WriteLine(row);
             }
+            Console.ForegroundColor = numberColor;
+            
+        }
+        static string FrameDisplay(int frame)
+        {
+            Console.SetCursorPosition(0, 5);
+            string spacing = "      ";
+            string finalString = "";
+            for (int i = 0; i < frame; i++)
+            {
+                finalString += spacing;
+            }
+            finalString += $"FRAME {frame+1}";
+            return finalString;
         }
     }
 }
