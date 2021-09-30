@@ -8,14 +8,18 @@ namespace Algorithm_design_3
 
     class Program
     {
+        // Variable for the height & width of the map, can be adjusted
         static int height = 30;
         static int width = 50;
+
+        // A bool variable that is used later in multiple places to check if we can make the smaller road.
         static bool canMakeMiniRoad = true;
 
+        // MapCharData contains all the characters that are generated. MapColorData contains which color is to be used.
         static char[,] mapCharData = new char[width, height];
-        static bool[,] glowRiver = new bool[width, height];
         static ConsoleColor[,] mapColorData = new ConsoleColor[width, height];
 
+        //We start with adding a background and then we create and draw the map. Making the background black afterwards to make the debug-message look better.
         static void Main(string[] args)
         {
             Console.BackgroundColor = ConsoleColor.DarkYellow;
@@ -27,7 +31,7 @@ namespace Algorithm_design_3
 
         static void CreateMap2()
         {
-          
+          //Here we simply set every character to a blankspace, because every char we do not set further down should be a blank space.
             for (int y = 0; y < height - 1; y++)
             {
                 for (int x = 0; x < width - 1; x++)
@@ -78,7 +82,7 @@ namespace Algorithm_design_3
             // Main Road & Bridge Generation
             char roadChar = '#';
             char bridgeChar = '=';
-
+            // We set a starting index for the road halfway down the map.
             int roadStartIndex = (height - 1) / 2;
 
             //Here we define a method that allows us to check if a specific index in the map is a river.
@@ -295,6 +299,7 @@ namespace Algorithm_design_3
             // We decide on a random starting location for the river that is somewhere between 66% and 75% of the map.
             int StartIndex = random.Next(Convert.ToInt32((width - 1) * randomStartMin), Convert.ToInt32((width - 1) * randomStartMax));
 
+            // We decide on a random direction using an integer
             for (int y = 0; y < height - 1; y++)
             {
 

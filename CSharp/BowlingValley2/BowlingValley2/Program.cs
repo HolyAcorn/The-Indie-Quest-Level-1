@@ -185,7 +185,7 @@ namespace BowlingValley
                 KnockAndDisplayPins(displayPins);
                 for (int i = 0; i < 3; i++)
                 {
-                    
+                    //int input = Convert.ToInt32(Console.ReadLine());
                     ConsoleKeyInfo enterInput = Console.ReadKey();
                     
                     if (enterInput.Key == ConsoleKey.Enter)
@@ -236,6 +236,8 @@ namespace BowlingValley
                             case 2:
                                 if (frame == totalFrames - 1)
                                 {
+                                    displayPins = new List<Pin>(displayPinsOG);
+                                    KnockAndDisplayPins(displayPins);
                                     if (IsStrike(knockedPins[frame][0]))
                                     {
   
