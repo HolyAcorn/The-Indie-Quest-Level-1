@@ -8,6 +8,11 @@ namespace BowlingValley
 {
     class Program
     {
+
+        struct Pin
+        {
+            public int Number;
+        }
         static void Main(string[] args)
         {
 
@@ -27,8 +32,16 @@ namespace BowlingValley
             int totalFrames = 10;
 
 
-            List<int> displayPinsOG = new List<int> {7,8,9,10,4,5,6,2,3,1};
-            List<int> displayPins = new List<int> (displayPinsOG);
+            List<Pin> displayPinsOG = new List<Pin> {};
+
+            for (int i = 0; i < totalFrames; i++)
+            {
+                Pin pin = new Pin();
+                pin.Number = i + 1;
+                displayPinsOG.Add(pin);
+            }
+            List<Pin> displayPins = new List<Pin> (displayPinsOG);
+            
 
             int[] pointsGained = new int[totalFrames];
             int[] frameScores = new int[totalFrames];
@@ -152,9 +165,11 @@ namespace BowlingValley
             int frame = 0;
             Console.WriteLine("Press enter to roll!");
             Console.WriteLine();
-            KnockAndDisplayPins(displayPinsOG);
+            
             while (frame < 10)
-            { 
+            {
+                displayPins = new List<Pin>(displayPinsOG);
+                KnockAndDisplayPins(displayPins);
                 for (int i = 0; i < 3; i++)
                 {
                     
@@ -167,8 +182,8 @@ namespace BowlingValley
                             case 0:
                                 for (int pin = 0; pin < knockedPins[frame][0]; pin++)
                                 {
-                                    int randomPin = random.Next(1,11);
-                                    displayPins.Remove(randomPin);
+                                    int randomPin = random.Next(0,displayPins.Count);
+                                    displayPins.RemoveAt(randomPin);
                                     KnockAndDisplayPins(displayPins);
                                 }
                                 AddNumber('?', frame, knockedPins[frame][0]);
@@ -183,8 +198,8 @@ namespace BowlingValley
                                 {
                                     for (int pin = 0; pin < knockedPins[frame][1]; pin++)
                                     {
-                                        int randomPin = random.Next(1, 11);
-                                        displayPins.Remove(randomPin);
+                                        int randomPin = random.Next(0, displayPins.Count);
+                                        displayPins.RemoveAt(randomPin);
                                         KnockAndDisplayPins(displayPins);
                                     }
                                     AddNumber('!', frame, knockedPins[frame][1], knockedPins[frame][0]);
@@ -220,8 +235,8 @@ namespace BowlingValley
                                         {
                                             for (int pin = 0; pin < knockedPins[frame][2]; pin++)
                                             {
-                                                int randomPin = random.Next(1, 11);
-                                                displayPins.Remove(randomPin);
+                                                int randomPin = random.Next(0, displayPins.Count);
+                                                displayPins.RemoveAt(randomPin);
                                                 KnockAndDisplayPins(displayPins);
                                             }
                                             
@@ -617,47 +632,45 @@ namespace BowlingValley
             return isStrike;
         }
 
-        static void KnockAndDisplayPins(List<int> knockedPins)
+        static void KnockAndDisplayPins(List<Pin> knockedPins)
         {
             char pinSymbol = 'O';
             string spacing = "   ";
-
+            string[] rows = new string[4];
             Console.SetCursorPosition(0, 6);
             for (int i = 0; i < 7; i++)
             {
                 Console.Write("                    ");
                 Console.WriteLine();
             }
+            rows[1] = "  ";
+            rows[2] = $" {spacing}";
             Console.SetCursorPosition(0, 6);
-            foreach (int pin in knockedPins)
+            foreach (Pin pin in knockedPins)
             {
-                if (pin == 7)
+                if (pin.Number >= 7)
                 {
-                    Console.Write($"{pinSymbol}");
+                    rows[0] += pinSymbol + spacing;
                 }
-                else if (pin == 4)
+                else if (pin.Number >= 4 && pin.Number < 7)
                 {
-                    Console.Write($"  {pinSymbol}");
+                    rows[1] += pinSymbol + spacing;
                 }
-                else if (pin == 2)
+                else if (pin.Number == 2 || pin.Number == 3)
                 {
-                    Console.Write($" {spacing}{pinSymbol}");
+                    rows[2] += pinSymbol + spacing;
                 }
-                else if (pin == 1)
+                else if (pin.Number == 1)
                 {
-                    Console.Write(spacing + spacing + pinSymbol);
+                    rows[3] += spacing + spacing + pinSymbol;
                 }
-                else
-                {
-                    Console.Write(spacing+pinSymbol);
-                }
-
-                if (pin == 10 || pin == 6 || pin == 3)
-                {
-                    Console.WriteLine();
-                }
-
                 
+                
+                
+            }
+            foreach (string row in rows)
+            {
+                Console.WriteLine(row);
             }
         }
     }
