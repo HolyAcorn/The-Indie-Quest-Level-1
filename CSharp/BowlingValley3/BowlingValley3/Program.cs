@@ -51,7 +51,14 @@ namespace BowlingValley
 
             for (int i = 0; i < knockedPins.Length; i++)
             {
-                
+                if (i == 9)
+                {
+                    knockedPins[i] = new int[3];
+                }
+                else
+                {
+                    knockedPins[i] = new int[2];
+                }
 
 
             }
@@ -123,27 +130,31 @@ namespace BowlingValley
                             case 0:
                                 // for (int pin = 0; pin < knockedPins[frame][0]; pin++)
                                 //{
-                                int hitPin = -1;
+                                int hitPin = 0;
+                                int point = 0;
                                 foreach (int pin in displayPins)
                                 {
                                     if (pin == firstRoll)
                                     {
-                                        hitPin = displayPins.IndexOf(pin);
+                                        hitPin = pin;
+                                        knockedPins[frame][0] += 1;
                                     }
                                 }
-                                    displayPins.RemoveAt(hitPin);
+                                    displayPins.Remove(hitPin);
                                     KnockAndDisplayPins(displayPins);
                                 //}
-                                AddNumber('?', frame, hitPin);
+                                AddNumber('?', frame, knockedPins[frame][0]);
                                 takeInput = true;
                                 break;
                             case 1:
                                 hitPin = -1;
+                                point = 0;
                                 foreach (int pin in displayPins)
                                 {
                                     if (pin == firstRoll)
                                     {
                                         hitPin = displayPins.IndexOf(pin);
+                                        knockedPins[frame][1] += 1;
                                     }
                                 }
                                 if (!IsPinStanding(firstRoll,displayPins))
@@ -153,7 +164,12 @@ namespace BowlingValley
                                 displayPins.Remove(hitPin);
                                 KnockAndDisplayPins(displayPins);
                                 //}
-                                AddNumber('!', frame, hitPin);
+                                AddNumber('!', frame, knockedPins[frame][1]);
+                                for (int number = 0; number < 3; number++)
+                                {
+                                    char[] pointChars = new char[] {':', ';', '-' };
+                                    AddNumber(pointChars[number],frame, knockedPins[frame][0] + knockedPins[frame][1]);
+                                }
                                 takeInput = true;
                                 /*if (IsStrike(knockedPins[frame][0]))
                                 {
