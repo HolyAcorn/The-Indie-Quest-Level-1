@@ -9,7 +9,7 @@ namespace BowlingValley
     class Program
     {
 
-
+        static Random random = new Random();
 
         static ConsoleColor displayColor = ConsoleColor.DarkGray;
         static ConsoleColor numberColor = ConsoleColor.Cyan;
@@ -31,7 +31,7 @@ namespace BowlingValley
             Match frame2Match = Regex.Match(scoreFrameString, frame2Regex);
             Match frame3Match = Regex.Match(scoreFrameString, frame3Regex);
 
-            Random random = new Random();
+            
             int totalFrames = 10;
 
 
@@ -39,13 +39,6 @@ namespace BowlingValley
             List<int> displayPinsOG = new List<int> {7,8,9,10,4,5,6,2,3,1};
 
             List<int> displayPins = new List<int>(displayPinsOG);
-
-
-            int[] pointsGained = new int[totalFrames];
-            int[] frameScores = new int[totalFrames];
-            bool isStrike = false;
-            bool isSpare = false;
-            bool isStrike2 = false;
 
             int[][] knockedPins = new int[totalFrames][];
 
@@ -98,157 +91,108 @@ namespace BowlingValley
                 Console.ForegroundColor = frameColor;
                 Console.WriteLine(FrameDisplay(frame));
                 Console.ForegroundColor = numberColor;
-                displayPins = new List<int>(displayPinsOG);
-                KnockAndDisplayPins(displayPins);
-                bool takeInput = true;
-                for (int i = 0; i < 3; i++)
+                DisplayPins(displayPins);
+                for (int rollIndex = 0; rollIndex < 3; rollIndex++)
                 {
-                    int input = 0;
+                    int laneInput = 0;
                     ConsoleKeyInfo enterInput = new ConsoleKeyInfo();
 
-                    if (takeInput)
-                    {
-                        Console.SetCursorPosition(0, 11);
-                        Console.WriteLine("Enter where to roll the ball (1-7):");
-                        input = Convert.ToInt32(Console.ReadLine());
-                    }
-                    else
-                    {
-                        Console.SetCursorPosition(0, 11);
-                        Console.WriteLine("Press enter to continue:                ");
-                        enterInput = Console.ReadKey();
-                    }
+                    Console.SetCursorPosition(0, 11);
+                    Console.WriteLine("Enter where to roll the ball (1-7):");
+                    laneInput = Convert.ToInt32(Console.ReadLine());
 
 
-                    if (enterInput.Key == ConsoleKey.Enter || (input < 8 && input > 0))
+
+
+
+                    if (laneInput < 8 && laneInput > 0)
                     {
 
-                        int firstRoll = GetKnockAngle(input, displayPins);
+                        knockedPins[frame][rollIndex] += KnockPins(displayPins, laneInput);
+                        UpdateFrameScores(knockedPins, frame, rollIndex+1);
+                        DisplayPins(displayPins);
 
-                        switch (i)
+
+
+                        switch (rollIndex)
                         {
                             case 0:
-                                // for (int pin = 0; pin < knockedPins[frame][0]; pin++)
-                                //{
-                                int hitPin = 0;
-                                int point = 0;
-                                foreach (int pin in displayPins)
-                                {
-                                    if (pin == firstRoll)
-                                    {
-                                        hitPin = pin;
-                                        knockedPins[frame][0] += 1;
-                                    }
-                                }
-                                    displayPins.Remove(hitPin);
-                                    KnockAndDisplayPins(displayPins);
-                                //}
                                 AddNumber('?', frame, knockedPins[frame][0]);
-                                takeInput = true;
+
                                 break;
                             case 1:
-                                hitPin = -1;
-                                point = 0;
-                                foreach (int pin in displayPins)
-                                {
-                                    if (pin == firstRoll)
-                                    {
-                                        hitPin = displayPins.IndexOf(pin);
-                                        knockedPins[frame][1] += 1;
-                                    }
-                                }
-                                if (!IsPinStanding(firstRoll,displayPins))
-                                {
-                                    hitPin = 0;
-                                }
-                                displayPins.Remove(hitPin);
-                                KnockAndDisplayPins(displayPins);
-                                //}
-                                AddNumber('!', frame, knockedPins[frame][1]);
-                                for (int number = 0; number < 3; number++)
-                                {
-                                    char[] pointChars = new char[] {':', ';', '-' };
-                                    AddNumber(pointChars[number],frame, knockedPins[frame][0] + knockedPins[frame][1]);
-                                }
-                                takeInput = true;
-                                /*if (IsStrike(knockedPins[frame][0]))
-                                {
-                                    AddNumber('!', frame, 0, knockedPins[frame][0]);
-                                }
-                                else
-                                {
-                                    for (int pin = 0; pin < knockedPins[frame][1]; pin++)
-                                    {
-                                        int randomPin = random.Next(0, displayPins.Count);
-                                        displayPins.RemoveAt(randomPin);
-                                        KnockAndDisplayPins(displayPins);
-                                    }
-                                    AddNumber('!', frame, knockedPins[frame][1], knockedPins[frame][0]);
-                                }
+                                AddNumber('!', frame, knockedPins[frame][1], knockedPins[frame][0]);
 
-                                if (frame != 0 && (IsStrike(knockedPins[frame - 1][0]) || IsSpare(knockedPins[frame - 1][1], knockedPins[frame - 1][0])))
-                                {
-                                    foreach (char scoreChar in new string(":;-"))
-                                    {
-                                        AddNumber(scoreChar, frame - 1, frameScores[frame - 1]);
-                                    }
-                                }
-                                if (!IsStrike(knockedPins[frame][0]) && !IsSpare(knockedPins[frame][1], knockedPins[frame][0]))
-                                {
-                                    foreach (char scoreChar in new string(":;-"))
-                                    {
-                                        AddNumber(scoreChar, frame, frameScores[frame]);
-                                    }
-                                }
-                                if (frame > 8)
-                                {
-                                    takeInput = true;
-                                }
-                                else
-                                {
-                                    takeInput = false;
-                                }*/
+
                                 break;
                             case 2:
-                                if (frame == totalFrames - 1)
-                                {
-                                    displayPins = new List<int>(displayPinsOG);
-                                    KnockAndDisplayPins(displayPins);
-                                    if (IsStrike(knockedPins[frame][0]))
-                                    {
-
-                                        AddNumber('#', frame, knockedPins[frame][2]);
-                                    }
-
-                                    else
-                                    {
-                                        if (IsSpare(knockedPins[frame][0], knockedPins[frame][1]))
-                                        {
-                                            for (int pin = 0; pin < knockedPins[frame][2]; pin++)
-                                            {
-                                                int randomPin = random.Next(0, displayPins.Count);
-                                                displayPins.RemoveAt(randomPin);
-                                                KnockAndDisplayPins(displayPins);
-                                            }
-
-                                            AddNumber('#', frame, knockedPins[frame][2]);
-                                        }
-
-                                    }
-                                    foreach (char scoreChar in new string(":;-"))
-                                    {
-                                        AddNumber(scoreChar, frame, frameScores[frame]);
-                                    }
-                                }
+                                AddNumber('#', frame, knockedPins[frame][2], knockedPins[frame][1]);
                                 break;
                             default:
                                 break;
                         }
+
+                    }
+
+                    bool firstRollStrike = IsStrike(knockedPins[frame][0]);
+                    bool inLastFrame = frame == 9;
+                    bool secondRollSpare = IsSpare(knockedPins[frame][0], knockedPins[frame][1]); ;
+                    bool secondRollStrike = IsStrike(knockedPins[frame][1]);
+
+                    if (firstRollStrike && rollIndex == 0 || secondRollSpare || secondRollStrike || (!inLastFrame && rollIndex == 1))
+                    {
+                        Console.SetCursorPosition(0, 11);
+                        Console.WriteLine("Press enter to continue:                ");
+                        Console.ReadKey();
+                        displayPins = new List<int>(displayPinsOG);
+                        DisplayPins(displayPins);
+                    }
+
+                    if (!inLastFrame && (firstRollStrike || rollIndex == 1) || inLastFrame && !firstRollStrike && !secondRollSpare && rollIndex > 0)
+                    {
+                        break;
                     }
                 }
+
                 frame++;
             }
             Console.WriteLine();
+        }
+
+        private static void DisplayFrameScore(int frame, int score)
+        {
+            for (int number = 0; number < 3; number++)
+            {
+                char[] pointChars = new char[] { ':', ';', '-' };
+
+                AddNumber(pointChars[number], frame, score);
+            }
+        }
+
+        private static int KnockPins(List<int> displayPins, int laneInput)
+        {
+            
+            int knockedPinsCount = 0;
+            int firstRollKnockedPinNumber = DetermineKnockedPin(laneInput, displayPins);
+            if (firstRollKnockedPinNumber > 0)
+            {
+                knockedPinsCount++;
+                displayPins.Remove(firstRollKnockedPinNumber);
+                for (int i = 0; i < 2; i++)
+                {
+                    int chance = random.Next(100);
+                    if (chance < 40)
+                    {
+                        laneInput--;
+                    }
+                    else if (chance < 80)
+                    {
+                        laneInput++;
+                    }
+                    knockedPinsCount += KnockPins(displayPins, laneInput);
+                }
+            }
+            return knockedPinsCount;
         }
 
         static string DrawScores(string line, int frameScore, char firstRoll, char secondRoll = ' ', char thirdRoll = ' ')
@@ -320,26 +264,26 @@ namespace BowlingValley
 
         }
 
-        static void AddNumber(char writer, int frame, int number, int previousNumber = 0)
+        static void AddNumber(char writer, int frame, int knockedPins, int previousKnockedPins = 0)
 
         {
             char display = ' ';
-            int spareCounter = previousNumber;
+            int spareCounter = previousKnockedPins;
             int displayYStart = 1;
             switch (writer)
             {
                 case '?':
-                    spareCounter += number;
-                    if (number == 0)
+                    spareCounter += knockedPins;
+                    if (knockedPins == 0)
                     {
                         display = '-';
                     }
                     else
                     {
-                        display = number.ToString()[0];
+                        display = knockedPins.ToString()[0];
 
                     }
-                    if (IsStrike(number))
+                    if (IsStrike(knockedPins))
                     {
                         display = 'X';
 
@@ -351,28 +295,28 @@ namespace BowlingValley
                 case '!':
 
 
-                    if (IsStrike(previousNumber) && frame != 9)
+                    if (IsStrike(previousKnockedPins) && frame != 9)
                     {
                         display = ' ';
                     }
 
                     else
                     {
-                        spareCounter += number;
-                        if (IsSpare(number, previousNumber))
+                        spareCounter += knockedPins;
+                        if (IsSpare(knockedPins, previousKnockedPins))
                         {
                             display = '/';
 
                         }
                         else
                         {
-                            if (number == 0)
+                            if (knockedPins == 0)
                             {
                                 display = '-';
                             }
                             else
                             {
-                                display = number.ToString()[0];
+                                display = knockedPins.ToString()[0];
                             }
                         }
                     }
@@ -381,62 +325,62 @@ namespace BowlingValley
                     Console.SetCursorPosition(6 * frame + 5, displayYStart);
                     break;
                 case '#':
-                    if (IsStrike(previousNumber))
-                    {
-                        display = ' ';
-                    }
-                    spareCounter += number;
-                    if (number == 0)
+                    spareCounter += knockedPins;
+                    if (knockedPins == 0)
                     {
                         display = '-';
                     }
                     else
                     {
-                        display = number.ToString()[0];
+                        display = knockedPins.ToString()[0];
                     }
-                    if (IsSpare(number, previousNumber))
+                    if (IsSpare(knockedPins, previousKnockedPins))
                     {
                         display = '/';
+                    }
+                    if (IsStrike(knockedPins))
+                    {
+                        display = 'X';
                     }
                     Console.SetCursorPosition(6 * 9 + 7, displayYStart);
                     break;
                 case ':':
-                    if (number > 99)
+                    if (knockedPins > 99)
                     {
-                        display = number.ToString()[0];
+                        display = knockedPins.ToString()[0];
 
                     }
                     Console.SetCursorPosition(6 * frame + 2, displayYStart + 2);
                     break;
                 case ';':
-                    if (number > 9)
+                    if (knockedPins > 9)
                     {
-                        if (number < 99)
+                        if (knockedPins < 99)
                         {
-                            display = number.ToString()[0];
+                            display = knockedPins.ToString()[0];
                         }
                         else
                         {
-                            display = number.ToString()[1];
+                            display = knockedPins.ToString()[1];
                         }
                     }
                     Console.SetCursorPosition(6 * frame + 3, displayYStart + 2);
                     break;
                 case '-':
-                    if (number > 9)
+                    if (knockedPins > 9)
                     {
-                        if (number > 99)
+                        if (knockedPins > 99)
                         {
-                            display = number.ToString()[2];
+                            display = knockedPins.ToString()[2];
                         }
                         else
                         {
-                            display = number.ToString()[1];
+                            display = knockedPins.ToString()[1];
                         }
                     }
                     else
                     {
-                        display = number.ToString()[0];
+                        display = knockedPins.ToString()[0];
                     }
                     Console.SetCursorPosition(6 * frame + 4, displayYStart + 2);
                     break;
@@ -450,25 +394,15 @@ namespace BowlingValley
 
         static bool IsSpare(int number1, int number2)
         {
-            bool isSpare = false;
-            if (number1 + number2 == 10)
-            {
-                isSpare = true;
-            }
-            return isSpare;
+            return number1 + number2 == 10 && number1 < 10;
         }
 
         static bool IsStrike(int number)
         {
-            bool isStrike = false;
-            if (number == 10)
-            {
-                isStrike = true;
-            }
-            return isStrike;
+            return number == 10;
         }
 
-        static void KnockAndDisplayPins(List<int> knockedPins)
+        static void DisplayPins(List<int> standingPins)
         {
             char pinSymbol = 'O';
             string spacing = "   ";
@@ -485,7 +419,7 @@ namespace BowlingValley
             }
 
             Console.SetCursorPosition(0, 7);
-            foreach (int pin in knockedPins)
+            foreach (int pin in standingPins)
             {
                 int left = 0;
                 int top = 7;
@@ -552,105 +486,106 @@ namespace BowlingValley
             return finalString;
         }
 
-        static int GetKnockAngle(int input, List<int> standingPins)
+        static int DetermineKnockedPin(int lane, List<int> standingPins)
         {
-            int choice = 0;
-            switch (input)
+            int knockedPinNumber = 0;
+            switch (lane)
             {
                 case 1:
                     if (IsPinStanding(7, standingPins))
                     {
-                        choice = 7;
+                        knockedPinNumber = 7;
                     }
                     else
                     {
-                        choice = 0;
+                        knockedPinNumber = 0;
                     }
                     break;
                 case 2:
                     if (IsPinStanding(4, standingPins))
                     {
-                        choice = 4;
+                        knockedPinNumber = 4;
                     }
                     else
                     {
-                        choice = 0;
+                        knockedPinNumber = 0;
                     }
                     break;
                 case 3:
                     if (IsPinStanding(2, standingPins))
                     {
-                        choice = 2;
+                        knockedPinNumber = 2;
                     }
                     else
                     {
                         if (IsPinStanding(8, standingPins))
                         {
-                            choice = 8;
+                            knockedPinNumber = 8;
                         }
                         else
                         {
-                            choice = 0;
+                            knockedPinNumber = 0;
                         }
                     }
                     break;
                 case 4:
                     if (IsPinStanding(1, standingPins))
                     {
-                        choice = 1;
+                        knockedPinNumber = 1;
                     }
                     else
                     {
                         if (IsPinStanding(5, standingPins))
                         {
-                            choice = 5;
+                            knockedPinNumber = 5;
                         }
                         else
                         {
-                            choice = 0;
+                            knockedPinNumber = 0;
                         }
                     }
                     break;
                 case 5:
                     if (IsPinStanding(3, standingPins))
                     {
-                        choice = 3;
+                        knockedPinNumber = 3;
                     }
                     else
                     {
                         if (IsPinStanding(9, standingPins))
                         {
-                            choice = 9;
+                            knockedPinNumber = 9;
                         }
                         else
                         {
-                            choice = 0;
+                            knockedPinNumber = 0;
                         }
                     }
                     break;
                 case 6:
                     if (IsPinStanding(6, standingPins))
                     {
-                        choice = 6;
+                        knockedPinNumber = 6;
                     }
                     else
                     {
-                        choice = 0;
+                        knockedPinNumber = 0;
                     }
                     break;
                 case 7:
                     if (IsPinStanding(10, standingPins))
                     {
-                        choice = 10;
+                        knockedPinNumber = 10;
                     }
                     else
                     {
-                        choice = 0;
+                        knockedPinNumber = 0;
                     }
                     break;
 
+
             }
-            return choice;
+            return knockedPinNumber;
 
             
 
@@ -668,8 +603,82 @@ namespace BowlingValley
             }
             return isTrue;
         }
+
+        static void UpdateFrameScores(int[][] knockedPins, int frame, int rollsCompleted)
+        {
+            int[] pointsGained = new int[10];
+
+            // Update scores
+            for (int i = 0; i < 10; i++)
+            {
+                //Normal scores (1 point for each knocked pin)
+                foreach (int knockedPin in knockedPins[i])
+                {
+                    pointsGained[i] += knockedPin;
+                }
+
+                // Spare scores (add first roll to previous (spare) frame)
+                
+                if (i > 0 &&  (frame > i || rollsCompleted > 0) && IsSpare(knockedPins[i - 1][0], knockedPins[i - 1][1]))
+                {
+                    pointsGained[i - 1] += knockedPins[i][0];
+                }
+
+                // First Strike score (adds first roll to previous (strike) frame)
+                if (i > 0 && (frame > i || rollsCompleted > 0) && IsStrike(knockedPins[i - 1][0]))
+                {
+                    pointsGained[i - 1] += knockedPins[i][0];
+                }
+
+                // Second Strike score (adds second roll to previous (strike) frame,)
+                if (i > 0 && (frame > i || rollsCompleted > 1) && IsStrike(knockedPins[i - 1][0]))
+                {
+                    pointsGained[i - 1] += knockedPins[i][1];
+                }
+
+                // (OR adds first roll to 2 frames ago if 2 strikes has happened))
+                if (i > 1 && (frame > i || rollsCompleted > 0) && IsStrike(knockedPins[i - 1][0]) && IsStrike(knockedPins[i-2][0]))
+                {
+                    pointsGained[i - 2] += knockedPins[i][0];
+                }
+
+
+            }
+            int frameScore = 0;
+
+            // Write Scores
+            for (int i = 0; i <= frame; i++)
+            {
+                frameScore += pointsGained[i];
+
+                bool haveAllRollsEarlyFrames = i < frame ||rollsCompleted > 0 && IsStrike(knockedPins[i][0]) || rollsCompleted > 1;
+                bool haveAllRollsTenthFrame = rollsCompleted == 2 && !IsStrike(knockedPins[i][0]) && !IsSpare(knockedPins[i][0], knockedPins[i][1]) || rollsCompleted == 3;
+                bool haveAllRolls = i == 9 ? haveAllRollsTenthFrame : haveAllRollsEarlyFrames;
+
+                bool waitingForSpare = IsSpare(knockedPins[i][0], knockedPins[i][1]) && i == frame;
+
+                bool waitingForStrikeSameFrame = IsStrike(knockedPins[i][0]) && i == frame;
+                bool waitingForStrikePreviousFrame = IsStrike(knockedPins[i][0]) && i == frame-1 && rollsCompleted < 2;
+                bool waitingForeverStrikeFrame = i < 9 && IsStrike(knockedPins[i][0]) && i == frame - 2 && rollsCompleted < 1 && IsStrike(knockedPins[i+1][0]);
+
+                bool waiting = waitingForSpare || waitingForeverStrikeFrame || waitingForStrikePreviousFrame || waitingForStrikeSameFrame;
+
+
+                if (haveAllRolls && (!waiting && i < 9 ||  i == 9))
+                {
+                    DisplayFrameScore(i, frameScore);
+                }
+                
+                
+                
+            }
+            
+
+        }
     }
 }
+
+    
 
 /* 
  if (frame == 9)

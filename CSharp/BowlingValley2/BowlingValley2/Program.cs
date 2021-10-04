@@ -196,7 +196,8 @@ namespace BowlingValley
                     {
                         Console.SetCursorPosition(0, 11);
                         Console.WriteLine("Enter where to roll the ball (1-7):");
-                        input = Convert.ToInt32(Console.ReadLine());
+                        input = 1;
+                        Console.ReadKey();
                     }
                     else
                     {
