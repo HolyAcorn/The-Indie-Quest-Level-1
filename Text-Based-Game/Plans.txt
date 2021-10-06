@@ -3,9 +3,9 @@
     +--------+--------+--------+--------+--------+--------+
     |    Ar  |        |        |        |        |    Ar  |
  1  |    29  |        |        |        |        |    32  |
-    |        |        |        |        |        |    x   |
+    |        |        |        |        |        |    #   |
     +--------+--------+--------+--------+--------+--------+
-    |   (H)  |        |        |        |        |        |
+    |   (P)  |        |        |        |        |        |
  2  |    20  |        |        |        |        |        |
     |        |        |        |        |        |        |
     +--------+--------+--------+--------+--------+--------+
@@ -25,12 +25,29 @@ Each round every unit gets one turn and is then allowed to be issued a command.
 The unit who's turn it currently is, is notaded by round brackets. The example here is in A2.
 Ranged units are notaded by a lower-case "r" next to their letter.
 X shows all the available tiles the unit can move to.
-x shows all the targets you can attack
+# shows all the targets you can attack
 
 
 
 Command list:
 move b - takes 1 argument which is the grid you wish to move to
 attack a (b) - takes 1 argument & 1 optional argument. a is the grid location of the target you wish to attack, b is the location which you wish your unit to attack from
-defend - skips round
+Hold - skips round
 help - Shows how to play and the command list
+
+//Infobox next to screen
+ __| |______________________________________| |__
+(__   ______________________________________   __)
+   | |                                      | |
+   | |          Unit Name: Pikeman          | |
+   | |          Attack: xx                  | |
+   | |          Soak: xx                    | |
+   | |          Haste: xx                   | |
+   | |          HP: xx                      | |
+   | |          Amount: 20                  | |
+   | |          Ranged Attack: xx           | |
+   | |          Ammo: xx                    | |
+   | |                                      | |
+ __| |______________________________________| |__
+(__   ______________________________________   __)
+   | |                                      | |

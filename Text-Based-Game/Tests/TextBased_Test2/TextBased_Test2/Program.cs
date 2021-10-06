@@ -5,14 +5,20 @@ using System.Collections.Generic;
 
 namespace TextBased_Test2
 {
-    class Program
+    public class Program
     {
         static string titleFile = "Title.txt";
-        static string tileFile = "Tiles.txt";
+        static string tilesFile = "Tiles.txt";
         static string[] title = File.ReadAllLines(titleFile);
         static string[] tilesAray = File.ReadAllLines(tilesFile);
         static ConsoleColor[,] titleColorData = new ConsoleColor[title.Length, title[1].Length];
         static char[,] titleCharData = new char[title.Length, title[1].Length];
+
+        static string flagFile = "Flag.txt";
+        static string[] flag = File.ReadAllLines(flagFile);
+        static char[,] flagCharData = new char[flag.Length, flag[1].Length];
+        static ConsoleColor[,] flagColorData = new ConsoleColor[flag.Length, flag[1].Length];
+
         static void Main(string[] args)
         {
 
@@ -118,6 +124,10 @@ namespace TextBased_Test2
                 Console.WriteLine();
             }
             Console.ReadKey();
+
+ 
+            
+            
         }
     }
 }
