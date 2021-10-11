@@ -76,6 +76,7 @@ namespace TextBased_Test2
         static ConsoleColor gridColor = ConsoleColor.White;
         static ConsoleColor unitFriendlyColor = ConsoleColor.Cyan;
         static ConsoleColor unitEnemyColor = ConsoleColor.Red;
+        static ConsoleColor inputColor = ConsoleColor.Magenta;
 
         //Unit creation
         static List<Unit> friendlyUnits = new List<Unit>
@@ -86,9 +87,9 @@ namespace TextBased_Test2
             };
         static List<Unit> enemyUnits = new List<Unit>
             {
-            CreateUnit(10,1,"Pikeman", 1, 3, 5, 4, 10, 1, false, false),
-            CreateUnit(10,5,"Swordsman", 6, 9, 12, 5, 35, 2, false, false),
-            CreateUnit(10,2,"Archer", 2, 3, 3, 4, 10, 3, false, true, 5, 8, 12)
+            CreateUnit(10,1,"Pikeman", 1, 3, 5, 3, 10, 1, false, false),
+            CreateUnit(10,5,"Swordsman", 6, 9, 12, 2, 35, 2, false, false),
+            CreateUnit(10,2,"Archer", 2, 3, 3, 3, 10, 3, false, true, 5, 8, 12)
             };
 
 
@@ -96,16 +97,15 @@ namespace TextBased_Test2
         {
             selectPlayer.Load();
             cancelPlayer.Load();
-            StartScreen();
+            //StartScreen();
             
             GenerateGrid();
             Console.Clear();
             DrawGrid();
-            Console.ReadKey();
-            _DebugMove(friendlyUnits[0], friendlyUnits[0].UnitLocation);
+            _DebugMove(friendlyUnits[0],0, friendlyUnits[0].UnitLocation);
+            TakeCommandInput();
+            
             //StartScreen();
-            Console.ReadKey();
-            _DebugMove(friendlyUnits[0], enemyUnits[0].UnitLocation,friendlyUnits[0].UnitLocation);
             Console.ReadKey();
         }
 
@@ -292,12 +292,12 @@ namespace TextBased_Test2
             Console.ReadKey();
             PlaySelectionSound(1);
             Console.Clear();
+
             WriteCool(intro2Array, 50, 500);
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Press any key to continue");
             Console.ReadKey();
-
         }
 
         static void WriteCool(string[] lines, int charSpeed, int rowSpeed)
@@ -444,16 +444,17 @@ namespace TextBased_Test2
                 unit.Ammo = ammo;
             }
 
-            unit.AmountLocation = new int[] { x * 10, y * 6 };
-            unit.UnitLocation = new int[] { (x * 10), y * 5};
+            unit.AmountLocation = new int[] { x, y };
+            unit.UnitLocation = new int[] { (x), y};
             return unit;
         }
-        static void _DebugMove(Unit unit, int[] endLocation, int[] startLocation = null)
+        static void _DebugMove(Unit unit, int unitIndex, int[] endLocation, int[] startLocation = null)
         {
             // Set color
             if (unit.IsFriendly)
             {
                 Console.ForegroundColor = unitFriendlyColor;
+
             }
             else
             {
@@ -463,18 +464,20 @@ namespace TextBased_Test2
             //Remove current place
             if (startLocation != null)
             {
-                Console.SetCursorPosition(startLocation[0], startLocation[1]);
+                Console.SetCursorPosition(startLocation[0]*10, startLocation[1]*5);
                 Console.Write("  ");
-                Console.SetCursorPosition(startLocation[0], startLocation[1] + 1);
+                Console.SetCursorPosition(startLocation[0]*10, startLocation[1]*5+1);
                 Console.Write("  ");
             }
 
             //Write New Place
-
-            Console.SetCursorPosition(endLocation[0], endLocation[1]);
+            Console.SetCursorPosition(endLocation[0]*10, endLocation[1]*5);
             Console.Write(unit.Symbol);
-            Console.SetCursorPosition(endLocation[0], endLocation[1] + 1);
+            Console.SetCursorPosition(endLocation[0]*10, endLocation[1]*5+1);
             Console.Write(unit.Amount);
+            
+            unit.UnitLocation = endLocation;
+            friendlyUnits[0] = unit;
 
             //Reset CursorPosition
             Console.SetCursorPosition(0, height * 6);
@@ -493,6 +496,100 @@ namespace TextBased_Test2
                 default:
                     break;
             }
+        }
+
+        static void TakeCommandInput()
+        {
+            
+            bool shouldInput = true;
+            while (true)
+            {
+                var input = Console.ReadLine();
+                if (input.StartsWith("move") || input.StartsWith("Move"))
+                {
+                    string[] moveInput = input.Split(' ');
+                    if (moveInput.Length < 3 && moveInput.Length > 1)
+                    {
+                        int moveColumnNumber = 0;
+                        switch (moveInput[1].ToCharArray()[0])
+                        {
+                            case 'A':
+                            case 'a':
+                                moveColumnNumber = 1;
+                                break;
+                            case 'B':
+                            case 'b':
+                                moveColumnNumber = 2;
+                                break;
+                            case 'C':
+                            case 'c':
+                                moveColumnNumber = 3;
+                                break;
+                            case 'D':
+                            case 'd':
+                                moveColumnNumber = 4;
+                                break;
+                            case 'E':
+                            case 'e':
+                                moveColumnNumber = 5;
+                                break;
+                            case 'F':
+                            case 'f':
+                                moveColumnNumber = 6;
+                                break;
+                            case 'G':
+                            case 'g':
+                                moveColumnNumber = 7;
+                                break;
+                            case 'H':
+                            case 'h':
+                                moveColumnNumber = 8;
+                                break;
+                            case 'I':
+                            case 'i':
+                                moveColumnNumber = 9;
+                                break;
+                            case 'J':
+                            case 'j':
+                                moveColumnNumber = 10;
+                                break;
+
+                            default:
+                                break;
+                        }
+                        char moveColumn = moveInput[1].ToCharArray()[0];
+                        int moveRow = int.Parse(moveInput[1].ToCharArray()[1].ToString());
+                        _DebugMove(friendlyUnits[0],0, new int[] { moveColumnNumber, moveRow }, friendlyUnits[0].UnitLocation);
+                        DeleteCurrentLine();
+
+                    }
+                    else
+                    {
+                        IncorrectInput();
+                    }
+                }
+                else
+                {
+                    IncorrectInput();
+                }
+
+            }
+        }
+        static void IncorrectInput()
+        {
+            Console.WriteLine("Please input a correct input.");
+            Console.SetCursorPosition(0,Console.CursorTop-2);
+            Thread.Sleep(2000);
+            Console.WriteLine("                               ");
+            Console.WriteLine("                               ");
+            Console.SetCursorPosition(0, Console.CursorTop - 2);
+        }
+
+        static void DeleteCurrentLine()
+        {
+            Console.SetCursorPosition(0,Console.CursorTop);
+            Console.Write("                                                            ");
+            Console.SetCursorPosition(0, Console.CursorTop);
         }
     }
 }
