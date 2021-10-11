@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using System.Media;
+using System.Linq;
 
 namespace TextBased_Test2
 {
@@ -21,18 +22,22 @@ namespace TextBased_Test2
 
         public int Priority;
 
-        public int RangedAttack;
+        public bool IsRanged;
+
+        public int MinRangedAttack;
+        public int MaxRangedAttack;
         public int Ammo;
 
         public bool IsFriendly;
+
+        public int[] UnitLocation;
+        public int[] AmountLocation;
     }
 
     public struct Cell
     {
         public int Row;
         public char Column;
-        public int[] UnitLocation;
-        public int[] AmountLocation;
     }
 
     public struct Grid
@@ -69,25 +74,44 @@ namespace TextBased_Test2
         static ConsoleColor unitFriendlyColor = ConsoleColor.Cyan;
         static ConsoleColor unitEnemyColor = ConsoleColor.Red;
 
+        //Unit creation
+        static List<Unit> friendlyUnits = new List<Unit>
+            {
+                CreateUnit(1,1,"Pikeman", 1, 3, 5, 4, 10, 1, true, false),
+                CreateUnit(1,5,"Swordsman", 6, 9, 12, 5, 35, 2, true, false),
+                CreateUnit(1,2,"Archer", 2, 3, 3, 4, 10, 3, true, true, 5, 8, 12)
+            };
+        static List<Unit> enemyUnits = new List<Unit>
+            {
+            CreateUnit(10,1,"Pikeman", 1, 3, 5, 4, 10, 1, false, false),
+            CreateUnit(10,5,"Swordsman", 6, 9, 12, 5, 35, 2, false, false),
+            CreateUnit(10,2,"Archer", 2, 3, 3, 4, 10, 3, false, true, 5, 8, 12)
+            };
+
 
         static void Main(string[] args)
         {
-
-
-
+            selectPlayer.Load();
+            cancelPlayer.Load();
+            StartScreen();
+            
             GenerateGrid();
-            Console.ReadKey();
+            PlaySelectionSound(1);
+            Console.Clear();
             DrawGrid();
             Console.ReadKey();
-            StartScreen();
+            _DebugMove(friendlyUnits[0], friendlyUnits[0].UnitLocation);
+            //StartScreen();
+            Console.ReadKey();
+            _DebugMove(friendlyUnits[0], enemyUnits[0].UnitLocation,friendlyUnits[0].UnitLocation);
             Console.ReadKey();
         }
 
         static void StartScreen()
         {
-            selectPlayer.Load();
+            
             musicPlayer.Load();
-            cancelPlayer.Load();
+            
             musicPlayer.PlayLooping();
             ConsoleColor borderColor = ConsoleColor.DarkYellow;
             ConsoleColor titleTextColor = ConsoleColor.Cyan;
@@ -195,14 +219,16 @@ namespace TextBased_Test2
             ConsoleKeyInfo input = Console.ReadKey();
             if (input.Key == ConsoleKey.P)
             {
-                selectPlayer.Play();
+                PlaySelectionSound(1);
                 Console.Clear();
                 Thread.Sleep(1000);
                 IntroText();
             }
-            else
+            else if (input.Key == ConsoleKey.Q)
             {
-                cancelPlayer.Play();
+                PlaySelectionSound(0);
+                Thread.Sleep(100);
+                Environment.Exit(0);
             }
 
         }
@@ -308,9 +334,7 @@ namespace TextBased_Test2
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
-                {
-                    mainGrid.Cells[x, y].AmountLocation = new int[] { x + 8+1, y * 4 + 4 };
-                    mainGrid.Cells[x, y].UnitLocation = new int[] { x + 8+1, y * 3 + 3 };
+                {                    
                     mainGrid.Cells[x, y].Row = y+1;
                     mainGrid.Cells[x, y].Column = Convert.ToChar(x + 65);
 
@@ -319,7 +343,7 @@ namespace TextBased_Test2
 
 
             // First Row
-            mainGrid.Lines[0] = "    +---------+";
+            mainGrid.Lines[0] = "     +---------+";
             for (int x = 0; x < width; x++)
             {
                 mainGrid.Lines[0] += "---------+";
@@ -332,11 +356,11 @@ namespace TextBased_Test2
                 if (y + height < height*cellHeight)
                 {
 
-                    mainGrid.Lines[y + 5] = "    +---------+";
-                    mainGrid.Lines[y + 1] = "    |         |";
-                    mainGrid.Lines[y + 2] = $"  {yCounter+1} |         |";
-                    mainGrid.Lines[y + 3] = "    |         |";
-                    mainGrid.Lines[y + 4] = "    |         |";
+                    mainGrid.Lines[y + 5] = "     +---------+";
+                    mainGrid.Lines[y + 1] = "     |         |";
+                    mainGrid.Lines[y + 2] = $"   {yCounter+1} |         |";
+                    mainGrid.Lines[y + 3] = "     |         |";
+                    mainGrid.Lines[y + 4] = "     |         |";
                     for (int x = 0; x < width; x++)
                     {
                         mainGrid.Lines[y + 5] += "---------+";
@@ -358,8 +382,10 @@ namespace TextBased_Test2
 
         static void DrawGrid()
         {
+            Console.WriteLine();
+            Console.WriteLine();
             Console.ForegroundColor = gridColor;
-            Console.Write("   ");
+            Console.Write("     ");
             for (int x = 0; x < width+1; x++)
             {
                 Console.Write($"     {Convert.ToChar(x + 65)}    ");
@@ -368,6 +394,93 @@ namespace TextBased_Test2
             foreach (string line in mainGrid.Lines)
             {
                 Console.WriteLine(line);
+            }
+        }
+
+
+        static Unit CreateUnit(int x, int y, string name, int minAttack, int maxAttack, int soak, int haste, int hp, int priority, bool isFriendly, bool isRanged, int minRangedAttack = 0, int maxRangedAttack = 0, int ammo = 0)
+        {
+            Unit unit = new Unit();
+            unit.Name = name;
+            unit.Symbol = name[0];
+            switch (name)
+            {
+                case "Pikeman":
+                    unit.Amount = random.Next(29,36);
+                    break;
+                case "Archer":
+                    unit.Amount = random.Next(19,26);
+                    break;
+                case "Swordsman":
+                    unit.Amount = random.Next(9,14);
+                    break;
+                default:
+                    break;
+            }
+
+            unit.MinAttack = minAttack;
+            unit.MaxAttack = maxAttack;
+            unit.Soak = soak;
+            unit.Haste = haste;
+            unit.HP = hp;
+            unit.Priority = priority;
+            unit.IsFriendly = isFriendly;
+            unit.IsRanged = isRanged;
+            if (isRanged)
+            {
+                unit.MaxRangedAttack = maxRangedAttack;
+                unit.MinRangedAttack = minRangedAttack;
+                unit.Ammo = ammo;
+            }
+
+            unit.AmountLocation = new int[] { x * 10, y * 6 };
+            unit.UnitLocation = new int[] { (x * 10), y * 5};
+            return unit;
+        }
+        static void _DebugMove(Unit unit, int[] endLocation, int[] startLocation = null)
+        {
+            // Set color
+            if (unit.IsFriendly)
+            {
+                Console.ForegroundColor = unitFriendlyColor;
+            }
+            else
+            {
+                Console.ForegroundColor = unitEnemyColor;
+            }
+
+            //Remove current place
+            if (startLocation != null)
+            {
+                Console.SetCursorPosition(startLocation[0], startLocation[1]);
+                Console.Write("  ");
+                Console.SetCursorPosition(startLocation[0], startLocation[1] + 1);
+                Console.Write("  ");
+            }
+
+            //Write New Place
+
+            Console.SetCursorPosition(endLocation[0], endLocation[1]);
+            Console.Write(unit.Symbol);
+            Console.SetCursorPosition(endLocation[0], endLocation[1] + 1);
+            Console.Write(unit.Amount);
+
+            //Reset CursorPosition
+            Console.SetCursorPosition(0, height * 6);
+        }
+
+        static void PlaySelectionSound(int selection)
+        {
+            switch (selection)
+            {
+                case 0:
+                    cancelPlayer.Play();
+                    break;
+                case 1:
+                    selectPlayer.Play();
+                    break;
+                default:
+                    break;
             }
         }
     }
