@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
+using System.Media;
 
 namespace TextBased_Test2
 {
@@ -21,7 +22,9 @@ namespace TextBased_Test2
 
         static void Main(string[] args)
         {
-
+            SoundPlayer musicPlayer = new SoundPlayer("ChampionsTheme.wav");
+            musicPlayer.Load();
+            musicPlayer.PlayLooping();
 
             ConsoleColor borderColor = ConsoleColor.DarkYellow;
             ConsoleColor bgColor = ConsoleColor.DarkGray;
@@ -124,9 +127,6 @@ namespace TextBased_Test2
                 Console.WriteLine();
             }
             Console.ReadKey();
-
- 
-            
             
         }
     }
