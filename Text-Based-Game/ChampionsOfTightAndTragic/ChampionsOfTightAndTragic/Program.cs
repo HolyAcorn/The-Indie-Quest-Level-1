@@ -62,6 +62,9 @@ namespace TextBased_Test2
         static string tilesFile = "Tiles.txt";
         static string[] tilesArray = File.ReadAllLines(tilesFile);
 
+        static string intro2File = "Intro2.txt";
+        static string[] intro2Array = File.ReadAllLines(intro2File);
+
         static SoundPlayer musicPlayer = new SoundPlayer(@"Sound\ChampionsTheme.wav");
         static SoundPlayer selectPlayer = new SoundPlayer(@"Sound\Select 1.wav");
         static SoundPlayer cancelPlayer = new SoundPlayer(@"Sound\Cancel 1.wav");
@@ -96,7 +99,6 @@ namespace TextBased_Test2
             StartScreen();
             
             GenerateGrid();
-            PlaySelectionSound(1);
             Console.Clear();
             DrawGrid();
             Console.ReadKey();
@@ -287,6 +289,15 @@ namespace TextBased_Test2
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+            PlaySelectionSound(1);
+            Console.Clear();
+            WriteCool(intro2Array, 50, 500);
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+
         }
 
         static void WriteCool(string[] lines, int charSpeed, int rowSpeed)

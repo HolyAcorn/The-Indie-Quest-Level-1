@@ -6,12 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Intro2.txt" />
     <None Remove="Lightning.txt" />
     <None Remove="Tiles.txt" />
     <None Remove="Title.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Intro2.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Lightning.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
