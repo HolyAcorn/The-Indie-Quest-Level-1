@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace TextBased_Test2
 {
-    public struct Unit
+    class Unit
     {
         public string Name;
         public char Symbol;
@@ -31,16 +31,29 @@ namespace TextBased_Test2
         public bool IsFriendly;
 
         public int[] UnitLocation;
-        public int[] AmountLocation;
+        public Cell Cell = new Cell();
+        
     }
-
-    public struct Cell
+    class Neighbor
+    {
+        public Cell Cell;
+        public int Distance;
+    }
+    class Cell
     {
         public int Row;
         public char Column;
+        public List<Neighbor> Neighbors = new List<Neighbor>();
+        public List<Path> ShortestPath = new List<Path>();
+    }
+    class Path
+    {
+        public Cell Cell;
+        public int Distance;
+        public List<Cell> StopCells = new List<Cell>();
     }
 
-    public struct Grid
+    class Grid
     {
         public Cell[,] Cells;
         public string[] Lines;
@@ -79,17 +92,23 @@ namespace TextBased_Test2
         static ConsoleColor inputColor = ConsoleColor.Magenta;
 
         //Unit creation
+            /*
+             CreateUnit takes in these arguments = x, y, name, MinAattack, MaxAttack, Soak, Haste, HP , Priority, IsFriendly, IsRanged,
+             MinRangeAttack, MaxRangeAttack, Ammo
+
+             Creates all the units and stores them in a list of friendly units and enemy units.
+             */
         static List<Unit> friendlyUnits = new List<Unit>
             {
-                CreateUnit(1,1,"Pikeman", 1, 3, 5, 4, 10, 1, true, false),
-                CreateUnit(1,5,"Swordsman", 6, 9, 12, 5, 35, 2, true, false),
-                CreateUnit(1,2,"Archer", 2, 3, 3, 4, 10, 3, true, true, 5, 8, 12)
+                CreateUnit(0,0,"Pikeman", 1, 3, 5, 4, 10, 1, true, false),
+                CreateUnit(0,4,"Swordsman", 6, 9, 12, 5, 35, 2, true, false),
+                CreateUnit(0,1,"Archer", 2, 3, 3, 4, 10, 3, true, true, 5, 8, 12)
             };
         static List<Unit> enemyUnits = new List<Unit>
             {
-            CreateUnit(10,1,"Pikeman", 1, 3, 5, 3, 10, 1, false, false),
-            CreateUnit(10,5,"Swordsman", 6, 9, 12, 2, 35, 2, false, false),
-            CreateUnit(10,2,"Archer", 2, 3, 3, 3, 10, 3, false, true, 5, 8, 12)
+            CreateUnit(8,0,"Pikeman", 1, 3, 5, 3, 10, 1, false, false),
+            CreateUnit(8,4,"Swordsman", 6, 9, 12, 2, 35, 2, false, false),
+            CreateUnit(8,1,"Archer", 2, 3, 3, 3, 10, 3, false, true, 5, 8, 12)
             };
 
 
@@ -102,7 +121,9 @@ namespace TextBased_Test2
             GenerateGrid();
             Console.Clear();
             DrawGrid();
+            _DebugMove(enemyUnits[0],0, enemyUnits[0].UnitLocation);
             _DebugMove(friendlyUnits[0],0, friendlyUnits[0].UnitLocation);
+            
             TakeCommandInput();
             
             //StartScreen();
@@ -328,28 +349,43 @@ namespace TextBased_Test2
 
         static void GenerateGrid()
         {
+            //How tall one cell is
             int cellHeight = 6;
 
             // Initialize Grid
             mainGrid.Cells = new Cell[width, height];
             mainGrid.Lines = new string[height * cellHeight-4];
-            // 
-            for (int y = 1; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    
-                }
-            }
             // Set Row & Columns
+                // I create one new cell for every spot in the Maingrid Array
+                //Since computer counts from 0, every row is offseted by -1 and needs to be adjusted when taking input.
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
-                {                    
-                    mainGrid.Cells[x, y].Row = y+1;
+                {
+
+                    mainGrid.Cells[x, y] = new Cell();
+                    mainGrid.Cells[x, y].Row = y;
                     mainGrid.Cells[x, y].Column = Convert.ToChar(x + 65);
+                    mainGrid.Cells[x, y].Neighbors = new List<Neighbor>();
+                    mainGrid.Cells[x, y].ShortestPath = new List<Path>();
+                    if (x > 0)
+                    {
+                        ConnectCells(mainGrid.Cells[x, y], mainGrid.Cells[x - 1, y]);
+                    }
+                    if (y > 0)
+                    {
+                        ConnectCells(mainGrid.Cells[x, y], mainGrid.Cells[x, y-1]);
+                    }
+                    if (x > 0 && y > 0)
+                    {
+                        ConnectCells(mainGrid.Cells[x, y], mainGrid.Cells[x - 1, y-1]);
+                    }
 
                 }
+            }
+            foreach (Cell cell in mainGrid.Cells)
+            {
+                Dijkstra(mainGrid.Cells, cell);
             }
 
 
@@ -443,8 +479,6 @@ namespace TextBased_Test2
                 unit.MinRangedAttack = minRangedAttack;
                 unit.Ammo = ammo;
             }
-
-            unit.AmountLocation = new int[] { x, y };
             unit.UnitLocation = new int[] { (x), y};
             return unit;
         }
@@ -464,20 +498,28 @@ namespace TextBased_Test2
             //Remove current place
             if (startLocation != null)
             {
-                Console.SetCursorPosition(startLocation[0]*10, startLocation[1]*5);
+                Console.SetCursorPosition(startLocation[0]*10+10, startLocation[1]*5+5);
                 Console.Write("  ");
-                Console.SetCursorPosition(startLocation[0]*10, startLocation[1]*5+1);
+                Console.SetCursorPosition(startLocation[0]*10+10, startLocation[1]*5+5+1);
                 Console.Write("  ");
             }
 
             //Write New Place
-            Console.SetCursorPosition(endLocation[0]*10, endLocation[1]*5);
+            Console.SetCursorPosition(endLocation[0]*10+10, endLocation[1]*5+5);
             Console.Write(unit.Symbol);
-            Console.SetCursorPosition(endLocation[0]*10, endLocation[1]*5+1);
+            Console.SetCursorPosition(endLocation[0]*10+10, endLocation[1]*5+1+5);
             Console.Write(unit.Amount);
-            
+            unit.Cell = mainGrid.Cells[endLocation[0], endLocation[1]];
             unit.UnitLocation = endLocation;
-            friendlyUnits[0] = unit;
+            if (unit.IsFriendly)
+            {
+                friendlyUnits[0] = unit;
+            }
+            else
+            {
+                enemyUnits[0] = unit;
+            }
+            
 
             //Reset CursorPosition
             Console.SetCursorPosition(0, height * 6);
@@ -502,7 +544,7 @@ namespace TextBased_Test2
         {
             
             bool shouldInput = true;
-            while (true)
+            while (shouldInput)
             {
                 var input = Console.ReadLine();
                 if (input.StartsWith("move") || input.StartsWith("Move"))
@@ -510,56 +552,10 @@ namespace TextBased_Test2
                     string[] moveInput = input.Split(' ');
                     if (moveInput.Length < 3 && moveInput.Length > 1)
                     {
-                        int moveColumnNumber = 0;
-                        switch (moveInput[1].ToCharArray()[0])
-                        {
-                            case 'A':
-                            case 'a':
-                                moveColumnNumber = 1;
-                                break;
-                            case 'B':
-                            case 'b':
-                                moveColumnNumber = 2;
-                                break;
-                            case 'C':
-                            case 'c':
-                                moveColumnNumber = 3;
-                                break;
-                            case 'D':
-                            case 'd':
-                                moveColumnNumber = 4;
-                                break;
-                            case 'E':
-                            case 'e':
-                                moveColumnNumber = 5;
-                                break;
-                            case 'F':
-                            case 'f':
-                                moveColumnNumber = 6;
-                                break;
-                            case 'G':
-                            case 'g':
-                                moveColumnNumber = 7;
-                                break;
-                            case 'H':
-                            case 'h':
-                                moveColumnNumber = 8;
-                                break;
-                            case 'I':
-                            case 'i':
-                                moveColumnNumber = 9;
-                                break;
-                            case 'J':
-                            case 'j':
-                                moveColumnNumber = 10;
-                                break;
+                        int moveColumnNumber = ConvertColumn(moveInput[1].ToCharArray()[0]);
 
-                            default:
-                                break;
-                        }
-                        char moveColumn = moveInput[1].ToCharArray()[0];
-                        int moveRow = int.Parse(moveInput[1].ToCharArray()[1].ToString());
-                        _DebugMove(friendlyUnits[0],0, new int[] { moveColumnNumber, moveRow }, friendlyUnits[0].UnitLocation);
+                        int moveRow = int.Parse(moveInput[1].ToCharArray()[1].ToString())-1;
+                        _MoveByDijsktra(friendlyUnits[0], 0, new int[] { moveColumnNumber, moveRow }, friendlyUnits[0].UnitLocation);
                         DeleteCurrentLine();
 
                     }
@@ -590,6 +586,209 @@ namespace TextBased_Test2
             Console.SetCursorPosition(0,Console.CursorTop);
             Console.Write("                                                            ");
             Console.SetCursorPosition(0, Console.CursorTop);
+        }
+
+        static void ConnectCells(Cell a, Cell b)
+        {
+            a.Neighbors.Add(new Neighbor { Cell = b, Distance = 1 });
+            b.Neighbors.Add(new Neighbor { Cell = a, Distance = 1 });
+        }
+        
+        static void Dijkstra(Cell[,] grid, Cell source)
+        {
+            // Q = Set of Neighbors
+            // u = Neighbour of Q that has the shortest distance from source
+            // v = Cell in Grid
+            List<Cell> Q = new List<Cell> { };
+            Dictionary<Cell, int> dist = new Dictionary<Cell, int> { };
+            Dictionary<Cell, Cell> prev = new Dictionary<Cell, Cell> { };
+            foreach (Cell v in grid)
+            {
+                dist.Add(v, 99);
+                prev.Add(v, null);
+                Q.Add(v);
+            }
+            dist[source] = 0;
+
+            while (Q.Count != 0)
+            {
+                Cell u = Q.OrderBy((v) => dist[v]).First();
+
+                Q.Remove(u);
+                for (int v = 0; v < u.Neighbors.Count; v++)
+                {
+                    Cell neighbor = u.Neighbors[v].Cell;
+                    if (Q.Contains(u.Neighbors[v].Cell))
+                    {
+                        int alt = dist[u] + u.Neighbors[v].Distance;
+                        if (alt < dist[neighbor])
+                        {
+                            dist[neighbor] = alt;
+                            prev[neighbor] = u;
+                        }
+                    }
+                }
+            }
+
+            foreach (Cell otherCell in grid)
+            {
+                if (otherCell == source) continue;
+
+                var path = new Path { Cell = otherCell, Distance = dist[otherCell] };
+                source.ShortestPath.Add(path);
+
+                Cell stop = prev[otherCell];
+                while (stop != source)
+                {
+                    path.StopCells.Insert(0, stop);
+                    stop = prev[stop];
+                }
+            }
+            //source.ShortestPath.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+        }
+
+        static void _MoveByDijsktra(Unit unit, int unitIndex, int[] endLocation, int[] startLocation = null)
+        {
+            int[] stopLocation = new int[2];
+            // Set color
+            if (unit.IsFriendly)
+            {
+                Console.ForegroundColor = unitFriendlyColor;
+
+            }
+            else
+            {
+                Console.ForegroundColor = unitEnemyColor;
+            }
+
+            
+            var startGrid = mainGrid.Cells[startLocation[0], startLocation[1]];
+            var endGrid = mainGrid.Cells[endLocation[0], endLocation[1]];
+            int pathIndex = 0;
+            //Write New Place
+            for (int i = 0; i < startGrid.ShortestPath.Count; i++)
+            {
+                if (startGrid.ShortestPath[i].Cell == endGrid)
+                {
+                    if (startGrid.ShortestPath[i].StopCells.Count != 0)
+                    {
+                        stopLocation[1] = startGrid.ShortestPath[i].StopCells[0].Row;
+                        stopLocation[0] = ConvertColumn(startGrid.ShortestPath[i].StopCells[0].Column);
+                        pathIndex = i;
+                    }
+                    else
+                    {
+                        stopLocation = new int[] { endLocation[0], endLocation[1] };
+                    }
+                    
+                    break;
+                }
+            }
+            for (int i = 1; i < startGrid.ShortestPath[pathIndex].StopCells.Count+2; i++)
+            {
+                MoveOneCell(i);
+            }
+            /*Console.SetCursorPosition(endLocation[0] * 10 + 10, endLocation[1] * 5 + 5);
+            Console.Write(unit.Symbol);
+            Console.SetCursorPosition(endLocation[0] * 10 + 10, endLocation[1] * 5 + 1 + 5);
+            Cosole.Write(unit.Amount);*/
+            unit.Cell = mainGrid.Cells[endLocation[0], endLocation[1]];
+            unit.UnitLocation = endLocation;
+            if (unit.IsFriendly)
+            {
+                friendlyUnits[0] = unit;
+            }
+            else
+            {
+                enemyUnits[0] = unit;
+            }
+
+
+            //Reset CursorPosition
+            Console.SetCursorPosition(0, height * 6);
+
+            void MoveOneCell(int stopIndex)
+            {
+                int stepTimer = 1000;
+                //Remove current place
+                if (startLocation != null)
+                {
+                    Console.SetCursorPosition(startLocation[0] * 10 + 10, startLocation[1] * 5 + 5);
+                    Console.Write("  ");
+                    Console.SetCursorPosition(startLocation[0] * 10 + 10, startLocation[1] * 5 + 5 + 1);
+                    Console.Write("  ");
+                }
+                Console.SetCursorPosition(stopLocation[0] * 10 + 10, stopLocation[1] * 5 + 5);
+                Console.Write(unit.Symbol);
+                Console.SetCursorPosition(stopLocation[0] * 10 + 10, stopLocation[1] * 5 + 1 + 5);
+                Console.Write(unit.Amount);
+                startLocation = new int[2] { stopLocation[0], stopLocation[1] };
+                if (stopIndex < startGrid.ShortestPath[pathIndex].StopCells.Count)
+                {
+                    stopLocation[1] = startGrid.ShortestPath[pathIndex].StopCells[stopIndex].Row;
+                    stopLocation[0] = ConvertColumn(startGrid.ShortestPath[pathIndex].StopCells[stopIndex].Column);
+                    Thread.Sleep(stepTimer);
+                }
+                else
+                {
+                    stopLocation = new int[2] { endLocation[0], endLocation[1] };
+                    Thread.Sleep(stepTimer);
+                }
+                
+            }
+
+            
+        }
+        static int ConvertColumn(char input)
+        {
+            int moveColumnNumber = 0;
+            switch (input)
+            {
+                case 'A':
+                case 'a':
+                    moveColumnNumber = 0;
+                    break;
+                case 'B':
+                case 'b':
+                    moveColumnNumber = 1;
+                    break;
+                case 'C':
+                case 'c':
+                    moveColumnNumber = 2;
+                    break;
+                case 'D':
+                case 'd':
+                    moveColumnNumber = 3;
+                    break;
+                case 'E':
+                case 'e':
+                    moveColumnNumber = 4;
+                    break;
+                case 'F':
+                case 'f':
+                    moveColumnNumber = 5;
+                    break;
+                case 'G':
+                case 'g':
+                    moveColumnNumber = 6;
+                    break;
+                case 'H':
+                case 'h':
+                    moveColumnNumber = 7;
+                    break;
+                case 'I':
+                case 'i':
+                    moveColumnNumber = 8;
+                    break;
+                case 'J':
+                case 'j':
+                    moveColumnNumber = 9;
+                    break;
+
+                default:
+                    break;
+            }
+            return moveColumnNumber;
         }
     }
 }
