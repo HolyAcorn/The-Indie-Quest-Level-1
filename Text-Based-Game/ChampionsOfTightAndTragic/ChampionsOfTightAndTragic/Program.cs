@@ -100,9 +100,9 @@ namespace TextBased_Test2
              */
         static List<Unit> friendlyUnits = new List<Unit>
             {
-                CreateUnit(0,0,"Pikeman", 1, 3, 5, 4, 10, 1, true, false),
-                CreateUnit(0,4,"Swordsman", 6, 9, 12, 5, 35, 2, true, false),
-                CreateUnit(0,1,"Archer", 2, 3, 3, 4, 10, 3, true, true, 5, 8, 12)
+                CreateUnit(0,0,"Pikeman", 1, 3, 5, 3, 10, 1, true, false),
+                CreateUnit(0,4,"Swordsman", 6, 9, 12, 2, 35, 2, true, false),
+                CreateUnit(0,1,"Archer", 2, 3, 3, 3, 10, 3, true, true, 5, 8, 12)
             };
         static List<Unit> enemyUnits = new List<Unit>
             {
@@ -391,7 +391,7 @@ namespace TextBased_Test2
 
             // First Row
             mainGrid.Lines[0] = "     +---------+";
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < width-1; x++)
             {
                 mainGrid.Lines[0] += "---------+";
             }
@@ -408,7 +408,7 @@ namespace TextBased_Test2
                     mainGrid.Lines[y + 2] = $"   {yCounter+1} |         |";
                     mainGrid.Lines[y + 3] = "     |         |";
                     mainGrid.Lines[y + 4] = "     |         |";
-                    for (int x = 0; x < width; x++)
+                    for (int x = 0; x < width-1; x++)
                     {
                         mainGrid.Lines[y + 5] += "---------+";
                         mainGrid.Lines[y + 1] += "         |";
@@ -433,7 +433,7 @@ namespace TextBased_Test2
             Console.WriteLine();
             Console.ForegroundColor = gridColor;
             Console.Write("     ");
-            for (int x = 0; x < width+1; x++)
+            for (int x = 0; x < width; x++)
             {
                 Console.Write($"     {Convert.ToChar(x + 65)}    ");
             }
@@ -522,7 +522,7 @@ namespace TextBased_Test2
             
 
             //Reset CursorPosition
-            Console.SetCursorPosition(0, height * 6);
+            Console.SetCursorPosition(0, height * 6-1);
         }
 
         static void PlaySelectionSound(int selection)
@@ -583,7 +583,7 @@ namespace TextBased_Test2
 
         static void DeleteCurrentLine()
         {
-            Console.SetCursorPosition(0,Console.CursorTop);
+            Console.SetCursorPosition(0,Console.CursorTop-1);
             Console.Write("                                                            ");
             Console.SetCursorPosition(0, Console.CursorTop);
         }
@@ -789,6 +789,13 @@ namespace TextBased_Test2
                     break;
             }
             return moveColumnNumber;
+        }
+
+        static void SetMoveTiles(Unit unit)
+        {
+            int haste = unit.Haste;
+            int[] location = unit.UnitLocation;
+            Cell cell = unit.Cell;
         }
     }
 }
