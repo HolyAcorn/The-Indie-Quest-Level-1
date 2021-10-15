@@ -10,7 +10,7 @@ namespace TextBased_Test2
     class Unit
     {
         public string Name;
-        public char Symbol;
+        public string Symbol;
         public ConsoleColor Color;
 
         public int MinAttack;
@@ -55,6 +55,7 @@ namespace TextBased_Test2
         public int ColumnNumber;
         public bool IsEmpty = true;
         public bool IsReachable = false;
+        public bool IsReachableRanged = false;
 
         public Unit Unit;
         public List<Neighbor> Neighbors = new List<Neighbor>();
@@ -108,12 +109,15 @@ namespace TextBased_Test2
 
         static ConsoleColor mainTextColor = ConsoleColor.DarkRed;
         static Grid mainGrid = new Grid();
+        static Turn mainTurn = new Turn();
+        static bool keepPlaying = true;
 
         //Grid Colors
         static ConsoleColor gridColor = ConsoleColor.White;
         static ConsoleColor unitFriendlyColor = ConsoleColor.Cyan;
         static ConsoleColor unitEnemyColor = ConsoleColor.Red;
         static ConsoleColor inputColor = ConsoleColor.Magenta;
+
 
         //Unit creation
         /*
@@ -135,6 +139,43 @@ namespace TextBased_Test2
                 CreateUnit(8,1,"Archer", 12, 13, 1, 3, 10, 3, false, true, 5, 58, 72)
             };
 
+        private static int SortTurnOrder(Unit unit1, Unit unit2)
+        {
+            if (unit1 == null)
+            {
+                if (unit2 == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            else
+            {
+                if (unit2 == null)
+                {
+                    return 1;
+                }
+                else
+                {
+                    
+                    int haste = unit1.Haste.CompareTo(unit2.Haste);
+                    if (haste != 0)
+                    {
+                        return haste;
+                    }
+                    else
+                    {
+                        return unit1.Haste.CompareTo(unit2.Haste);
+                    }
+
+                    
+                    
+                }
+            }
+        }
 
         static void Main(string[] args)
         {
@@ -142,14 +183,58 @@ namespace TextBased_Test2
             cancelPlayer.Load();
             //StartScreen();
 
+            //Initialize Turns
+            mainTurn.UnitsTurn = new List<Unit>();
+            for (int i = 0; i < 3; i++)
+            {
+                mainTurn.UnitsTurn.Add(enemyUnits[i]);
+                mainTurn.UnitsTurn.Add(friendlyUnits[i]);
+            }
+            mainTurn.UnitsTurn.Sort(SortTurnOrder);
+            mainTurn.UnitsTurn.Reverse();
+
+
             GenerateGrid();
             Console.Clear();
             DrawGrid();
-            _DebugMove(enemyUnits[0], 0, enemyUnits[0].UnitLocation);
-            _DebugMove(friendlyUnits[0], 0, friendlyUnits[0].UnitLocation);
+            foreach (Unit unit in mainTurn.UnitsTurn)
+            {
+                InitializeUnits(unit);
+            }
+            
+            while (keepPlaying)
+            {
+                    WriteInCell(mainTurn.UnitsTurn[0].UnitLocation, mainTurn.UnitsTurn[0].Color, $"({mainTurn.UnitsTurn[0].Symbol})", mainTurn.UnitsTurn[0].Amount.ToString());
+                
+                if (mainTurn.UnitsTurn[0].IsFriendly)
+                {
+                    mainTurn.PlayerTurn = true;
+                }
+                else
+                {
+                    mainTurn.PlayerTurn = false;
+                }
+                bool turnDone = false;
+                if (mainTurn.PlayerTurn)
+                {
+                    TakeCommandInput(mainTurn.UnitsTurn[0]);
+                    turnDone = true;
+                }
+                else
+                {
+                    //Placeholder Multiplayer, add AI method here later
+                    TakeCommandInput(mainTurn.UnitsTurn[0]);
+                    turnDone = true;
+                }
+                if (turnDone)
+                {
+                    Unit tempUnit = mainTurn.UnitsTurn[0];
+                    mainTurn.UnitsTurn.RemoveAt(0);
+                    mainTurn.UnitsTurn.Add(tempUnit);
+                }
+            }
 
-
-            TakeCommandInput();
+            
 
             //StartScreen();
             Console.ReadKey();
@@ -481,7 +566,11 @@ namespace TextBased_Test2
         {
             Unit unit = new Unit();
             unit.Name = name;
-            unit.Symbol = name[0];
+            unit.Symbol = name[0].ToString();
+            if (isRanged)
+            {
+                unit.Symbol += "r";
+            }
             switch (name)
             {
                 case "Pikeman":
@@ -523,8 +612,9 @@ namespace TextBased_Test2
             unit.UnitLocation = new int[] { (x), y };
             return unit;
         }
-        static void _DebugMove(Unit unit, int unitIndex, int[] endLocation, int[] startLocation = null)
+        static void InitializeUnits(Unit unit)
         {
+            int[] endLocation = unit.UnitLocation;
             // Set color
             if (unit.IsFriendly)
             {
@@ -536,14 +626,9 @@ namespace TextBased_Test2
                 Console.ForegroundColor = unitEnemyColor;
             }
 
-            //Remove current place
-            if (startLocation != null)
-            {
-                WriteInCell(startLocation, ConsoleColor.White);
-            }
 
             //Write New Place
-            WriteInCell(endLocation, unit.Color ,unit.Symbol.ToString(), unit.Amount.ToString());
+            WriteInCell(endLocation, unit.Color ,$" {unit.Symbol.ToString()}", unit.Amount.ToString());
             unit.Cell = mainGrid.Cells[endLocation[0], endLocation[1]];
             mainGrid.Cells[endLocation[0], endLocation[1]].Unit = unit;
             SetCellNotEmpty(mainGrid.Cells[endLocation[0], endLocation[1]]);
@@ -577,13 +662,13 @@ namespace TextBased_Test2
             }
         }
 
-        static void TakeCommandInput()
+        static void TakeCommandInput(Unit unit)
         {
 
             bool shouldInput = true;
             while (shouldInput)
             {
-                SetMoveTiles(friendlyUnits[0]);
+                SetMoveTiles(unit);
                 var input = Console.ReadLine();
                 if (input.StartsWith("move") || input.StartsWith("Move"))
                 {
@@ -602,8 +687,9 @@ namespace TextBased_Test2
                                     WriteInCell(new int[] { cell.ColumnNumber, cell.Row }, ConsoleColor.White);
                                 }
                             }
-                            _MoveByDijsktra(friendlyUnits[0], 0, new int[] { moveColumnNumber, moveRow }, friendlyUnits[0].UnitLocation);
+                            _MoveByDijsktra(unit, 0, new int[] { moveColumnNumber, moveRow }, unit.UnitLocation);
                             DeleteCurrentLine();
+                            shouldInput = false;
 
                         }
                         else
@@ -638,19 +724,42 @@ namespace TextBased_Test2
                         int attackColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]);
                         int attackRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
 
-                        if (mainGrid.Cells[attackColumnNumber, attackRow].Unit != null && mainGrid.Cells[attackColumnNumber, attackRow].IsReachable)
+                        if (mainGrid.Cells[attackColumnNumber, attackRow].Unit != null)
                         
                         {
-                            if (mainGrid.Cells[attackColumnNumber, attackRow].Unit.IsFriendly != friendlyUnits[0].IsFriendly)
+                            if (mainGrid.Cells[attackColumnNumber, attackRow].IsReachable || mainGrid.Cells[attackColumnNumber, attackRow].IsReachableRanged)
                             {
-                                _MoveByDijsktra(friendlyUnits[0], 0, new int[] { moveColumnNumber, moveRow }, friendlyUnits[0].UnitLocation);
-                                AttackUnit(friendlyUnits[0], mainGrid.Cells[attackColumnNumber, attackRow].Unit);
-                                
+                                if (mainGrid.Cells[attackColumnNumber, attackRow].Unit.IsFriendly != unit.IsFriendly)
+                                {
+                                    foreach (Cell cell in mainGrid.Cells)
+                                    {
+                                        if (cell.IsReachable && cell.IsEmpty)
+                                        {
+                                            WriteInCell(new int[] { cell.ColumnNumber, cell.Row }, ConsoleColor.White);
+                                        }
+                                    }
+                                    if (!unit.IsRanged || unit.Ammo <= 0)
+                                    {
+                                        unit.Ammo--;
+                                        _MoveByDijsktra(unit, 0, new int[] { moveColumnNumber, moveRow }, unit.UnitLocation);
+                                    }
+
+                                    WriteInCell(unit.UnitLocation, unit.Color);
+                                    WriteInCell(unit.UnitLocation, unit.Color, $" {unit.Symbol.ToString()}", unit.Amount.ToString());
+                                    AttackUnit(unit, mainGrid.Cells[attackColumnNumber, attackRow].Unit);
+                                    shouldInput = false;
+
+                                }
+                                else
+                                {
+                                    IncorrectInput("You cannot attack your own troops!");
+                                }
                             }
                             else
                             {
-                                IncorrectInput("You cannot attack your own troops!");
+                                IncorrectInput("You cannot reach that enemy!");
                             }
+                            
                         }
                         else
                         {
@@ -825,7 +934,9 @@ namespace TextBased_Test2
                 {
                     WriteInCell(startLocation, ConsoleColor.White);
                 }
-                WriteInCell(stopLocation, unit.Color, unit.Symbol.ToString(), unit.Amount.ToString());
+                WriteInCell(stopLocation, unit.Color, $" {unit.Symbol.ToString()}", unit.Amount.ToString());
+                mainGrid.Cells[startLocation[0], startLocation[1]].IsEmpty = true;
+                mainGrid.Cells[startLocation[0], startLocation[1]].Unit = null;
                 startLocation = new int[2] { stopLocation[0], stopLocation[1] };
                 if (stopIndex < startGrid.ShortestPath[pathIndex].StopCells.Count)
                 {
@@ -838,6 +949,7 @@ namespace TextBased_Test2
                     stopLocation = new int[2] { endLocation[0], endLocation[1] };
                     Thread.Sleep(stepTimer);
                 }
+
 
             }
 
@@ -903,7 +1015,16 @@ namespace TextBased_Test2
             // False = AI, true = Player
             bool unitTeam = unit.IsFriendly;
             Console.ForegroundColor = unit.Color;
-
+            foreach (Cell c in mainGrid.Cells)
+            {
+                SetSingleEmptyTile(new int[] { c.ColumnNumber, c.Row });
+                if (c.Unit != null)
+                {
+                    c.IsEmpty = false;
+                }
+                c.IsReachable = false;
+                c.IsReachableRanged = false;
+            }
             for (int i = 0; i < haste + 1; i++)
             {
                 foreach (Neighbor neighbor in cell.Neighbors)
@@ -911,7 +1032,7 @@ namespace TextBased_Test2
                     int[] tiler = new int[] { neighbor.Cell.ColumnNumber, neighbor.Cell.Row };
                     if (neighbor.Cell.IsEmpty)
                     {
-                        SetSingleEmptyTile(tiler);
+                        SetSingleMoveableTile(tiler);
                         mainGrid.Cells[tiler[0], tiler[1]].IsEmpty = true;
                         mainGrid.Cells[tiler[0], tiler[1]].IsReachable = true;
                     }
@@ -920,7 +1041,7 @@ namespace TextBased_Test2
                         if (neighborInNeighbor.Cell.IsEmpty)
                         {
                             tiler = new int[] { neighborInNeighbor.Cell.ColumnNumber, neighborInNeighbor.Cell.Row };
-                            SetSingleEmptyTile(tiler);
+                            SetSingleMoveableTile(tiler);
                             mainGrid.Cells[tiler[0], tiler[1]].IsEmpty = true;
                             mainGrid.Cells[tiler[0], tiler[1]].IsReachable = true;
                         }
@@ -936,12 +1057,26 @@ namespace TextBased_Test2
                 }
             }
 
+            if (unit.IsRanged)
+            {
+                foreach (Cell c in mainGrid.Cells)
+                {
+                    if (!c.IsEmpty && c.Unit.IsFriendly != unitTeam)
+                    {
+                        int[] tiler = new int[] { c.ColumnNumber, c.Row };
+                        SetSingleEnemyTile(tiler);
+                        mainGrid.Cells[tiler[0], tiler[1]].IsEmpty = false;
+                        mainGrid.Cells[tiler[0], tiler[1]].IsReachableRanged = true;
+                    }
+                }
+            }
+
 
 
             Console.SetCursorPosition(0, 29);
 
 
-            static void SetSingleEmptyTile(int[] loc)
+            static void SetSingleMoveableTile(int[] loc)
             {
                 Console.SetCursorPosition(loc[0] * 10 + 10, loc[1] * 5 + 5);
                 Console.Write("X  ");
@@ -951,6 +1086,11 @@ namespace TextBased_Test2
                 Console.SetCursorPosition(loc[0] * 10 + 10, loc[1] * 5 + 5+2);
                 Console.Write("#  ");
             }
+            static void SetSingleEmptyTile(int[] loc)
+            {
+                Console.SetCursorPosition(loc[0] * 10 + 10, loc[1] * 5 + 5+2);
+                Console.Write("   ");
+            }
         }
 
         static void SetCellNotEmpty(Cell cell)
@@ -958,12 +1098,12 @@ namespace TextBased_Test2
             cell.IsEmpty = false;
         }
 
-        static void WriteInCell(int[] location, ConsoleColor color ,string text1 = "  ", string text2 = "  ", int xAdditive = 0)
+        static void WriteInCell(int[] location, ConsoleColor color ,string text1 = "    ", string text2 = "    ")
         {
             Console.ForegroundColor = color;
-            Console.SetCursorPosition(location[0] * 10 + 10 + xAdditive, location[1] * 5 + 5);
+            Console.SetCursorPosition(location[0] * 10 + 10 -1, location[1] * 5 + 5);
             Console.Write(text1);
-            Console.SetCursorPosition(location[0] * 10 + 10 + xAdditive, location[1] * 5 + 5 + 1);
+            Console.SetCursorPosition(location[0] * 10 + 10, location[1] * 5 + 5 + 1);
             Console.Write(text2);
         }
 
@@ -1000,7 +1140,7 @@ namespace TextBased_Test2
                     }
                     else
                     {
-                        WriteInCell(attackedUnit.UnitLocation, attackedUnit.Color, attackedUnit.Symbol.ToString(), attackedUnit.Amount.ToString() + " ");
+                        WriteInCell(attackedUnit.UnitLocation, attackedUnit.Color, $" {attackedUnit.Symbol}", attackedUnit.Amount.ToString() + " ");
 
                     }
                 }
@@ -1023,5 +1163,59 @@ namespace TextBased_Test2
             Thread.Sleep(2500);
             DeleteCurrentLine();
         }
+
+        static void AIDecideDestination(Unit unit)
+        {
+            List<Unit> playerUnits = new List<Unit>();
+            foreach (Unit u in mainTurn.UnitsTurn)
+            {
+                if (u.IsFriendly)
+                {
+                    playerUnits.Add(u);
+                }
+            }
+            playerUnits.Sort(SortPlayerList);
+
+
+
+            static int SortPlayerList(Unit unit1, Unit unit2)
+            {
+                if (unit1 == null)
+                {
+                    if (unit2 == null)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                }
+                else
+                {
+                    if (unit2 == null)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+
+                        int priority = unit1.Priority.CompareTo(unit2.Priority);
+                        if (priority != 0)
+                        {
+                            return priority;
+                        }
+                        else
+                        {
+                            return unit1.Priority.CompareTo(unit2.Priority);
+                        }
+
+
+
+                    }
+                }
+            }
+        }
+
     }
 }
