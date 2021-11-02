@@ -85,8 +85,6 @@ namespace TextBased_Test2
 
     public class Program
     {
-
-
         static Random random = new Random();
 
         static int width = 9;
@@ -96,6 +94,7 @@ namespace TextBased_Test2
         static string[] title = File.ReadAllLines(titleFile);
         static ConsoleColor[,] titleColorData = new ConsoleColor[title.Length, title[1].Length];
         static char[,] titleCharData = new char[title.Length, title[1].Length];
+        static int titleRowSpeed = 25;
 
         static string tilesFile = "Tiles.txt";
         static string[] tilesArray = File.ReadAllLines(tilesFile);
@@ -186,7 +185,6 @@ namespace TextBased_Test2
             cancelPlayer.Load();
             //StartScreen();
 
-            TutorialScreen();
 
             //Initialize Turns
             mainTurn.UnitsTurn = new List<Unit>();
@@ -208,6 +206,7 @@ namespace TextBased_Test2
                 InitializeUnits(unit);
             }
 
+            //Game loop
             while (keepPlaying)
             {
                 WriteInCell(mainTurn.UnitsTurn[0].UnitLocation, mainTurn.UnitsTurn[0].Color, $"({mainTurn.UnitsTurn[0].Symbol})", mainTurn.UnitsTurn[0].Amount.ToString());
@@ -238,8 +237,6 @@ namespace TextBased_Test2
                     }
                     else
                     {
-                        //Placeholder Multiplayer, add AI method here later
-                        //TakeCommandInput(mainTurn.UnitsTurn[0]);
                         AIDecideDestination(mainTurn.UnitsTurn[0]);
                         turnDone = true;
                     }
@@ -250,13 +247,18 @@ namespace TextBased_Test2
                     Unit tempUnit = mainTurn.UnitsTurn[0];
                     mainTurn.UnitsTurn.RemoveAt(0);
                     mainTurn.UnitsTurn.Add(tempUnit);
+
+                    if (enemyUnits.Count == 0)
+                    {
+                        WinScreen();
+                    }
+                    else if (friendlyUnits.Count == 0)
+                    {
+                        LooseScreen();
+                    }
                 }
             }
 
-
-
-            //StartScreen();
-            Console.ReadKey();
         }
 
         static void StartScreen()
@@ -267,7 +269,7 @@ namespace TextBased_Test2
             musicPlayer.PlayLooping();
             ConsoleColor borderColor = ConsoleColor.DarkYellow;
             ConsoleColor titleTextColor = ConsoleColor.Cyan;
-
+            
 
 
             for (int i = 0; i < 6; i++)
@@ -347,7 +349,7 @@ namespace TextBased_Test2
                     cIndex++;
                 }
                 edgeCounter++;
-                Thread.Sleep(25);
+                Thread.Sleep(titleRowSpeed);
                 Console.WriteLine();
             }
             for (int i = 22; i < 28; i++)
@@ -361,7 +363,7 @@ namespace TextBased_Test2
                     Thread.Sleep(0);
                     cIndex++;
                 }
-                Thread.Sleep(25);
+                Thread.Sleep(titleRowSpeed);
                 Console.WriteLine();
             }
 
@@ -369,31 +371,58 @@ namespace TextBased_Test2
             Console.ForegroundColor = mainTextColor;
             Console.WriteLine("Would you like to (p)lay, read a (t)utorial, or (q)uit?");
             ConsoleKeyInfo input = Console.ReadKey();
-            if (input.Key == ConsoleKey.P)
+            switch (input.Key)
             {
-                PlaySelectionSound(1);
-                Console.Clear();
-                Thread.Sleep(1000);
-                IntroText();
+                case ConsoleKey.P:
+                    PlaySelectionSound(1);
+                    Console.Clear();
+                    Thread.Sleep(1000);
+                    SingleOrMultiplayer();
+                    break;
+                case ConsoleKey.Q:
+                    PlaySelectionSound(0);
+                    Thread.Sleep(100);
+                    Environment.Exit(0);
+                    break;
+                case ConsoleKey.T:
+                    PlaySelectionSound(1);
+                    Console.Clear();
+                    Thread.Sleep(1000);
+                    TutorialScreen();
+                    break;
             }
-            else if (input.Key == ConsoleKey.Q)
-            {
-                PlaySelectionSound(0);
-                Thread.Sleep(100);
-                Environment.Exit(0);
-            }
-
         }
 
-        static void TutorialScreen(bool inGame = false)
+        static void SingleOrMultiplayer()
+        {
+            Console.ForegroundColor = mainTextColor;
+            WriteCool(new string[] {"Would you like to play (s)ingleplayer or (m)ultiplayer?" }, 50, 250);
+            ConsoleKeyInfo playerInput = Console.ReadKey();
+            switch (playerInput.Key)
+            {
+                
+                case ConsoleKey.M:
+                    multiPlayer = true;
+                    PlaySelectionSound(1);
+                    Console.Clear();
+                    Thread.Sleep(1000);
+                    IntroText();
+                    break;
+                case ConsoleKey.S:
+                    multiPlayer = false;
+                    PlaySelectionSound(1);
+                    Console.Clear();
+                    Thread.Sleep(1000);
+                    IntroText();
+                    break;
+              
+            }
+        }
+
+        static void TutorialScreen()
         {
             int tutCharSpeed = 0; // 50
             int tutRowSpeed = 0; // 250
-            if (inGame)
-            {
-                tutCharSpeed = 10;
-                tutRowSpeed = 100;
-            }
             Console.ForegroundColor = ConsoleColor.White;
             Console.Clear();
             string tutorialPath = "Tutorial Screen.txt";
@@ -610,84 +639,161 @@ namespace TextBased_Test2
                                 IncorrectInput("Hmm, that didn't work. Remember, to move you type move x. Replace the x with the cell you wish to travel to.");
                             }
                         }
+
+                        Console.SetCursorPosition(0, 21);
+                        DeleteCurrentLine();
+                        Console.SetCursorPosition(0, 20);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        DeleteCurrentLine();
+                        WriteCool(new string[] { "Great job! :D", " ", "As you can see, the turn has now passed onto the red Swordsman.",
+                    "This is because every turn, your unit can only perform 1 action." }, tutCharSpeed, tutRowSpeed);
+
+                        Console.WriteLine();
+                        WriteCool(new string[] { "Press any key to continue...." }, tutCharSpeed, tutRowSpeed);
+                        Console.ReadKey();
+
+                        // Input 4 (Attack)
+                        Console.Clear();
+                        Console.WriteLine("Attack");
+                        WriteCool(new string[] {" ", "Whenever you are close enough to attack an enemy, a yellow " + '\u0022' + "#" + '\u0022' + " will appear beneath them.",
+                                        "You can then choose to attack them by typing: "}, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = inputColor;
+                        WriteCool(new string[] { "attack x" }, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine();
+                        WriteCool(new string[] { "You would however replace the x with the cell where the unit you wish to attack is located. Example: " }, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = inputColor;
+                        WriteCool(new string[] { "attack C4" }, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine();
+                        WriteCool(new string[] { "Press any key to continue...." }, tutCharSpeed, tutRowSpeed);
+                        Console.ReadKey();
+                        Console.Clear();
+
+                        Console.ForegroundColor = gridColor;
+                        foreach (string line in tutorialLines)
+                        {
+                            Console.WriteLine(line);
+                        }
+                        Console.SetCursorPosition(8, 5);
+                        Console.ForegroundColor = moveColor;
+                        Console.Write("(");
+                        Console.ForegroundColor = unitFriendlyColor;
+                        Console.Write("P");
+                        Console.ForegroundColor = moveColor;
+                        Console.Write(")");
+                        Console.SetCursorPosition(9, 6);
+                        Console.ForegroundColor = unitFriendlyColor;
+                        Console.Write("24");
+                        Console.SetCursorPosition(9 + 10, 5);
+                        Console.ForegroundColor = moveColor;
+                        Console.Write("x");
+                        Console.SetCursorPosition(9 + 10, 10);
+                        Console.Write("x");
+                        Console.SetCursorPosition(9, 10);
+                        Console.Write("x");
+                        Console.SetCursorPosition(29, 10);
+                        Console.ForegroundColor = unitEnemyColor;
+                        Console.Write("S");
+                        Console.SetCursorPosition(29, 11);
+                        Console.Write("9");
+                        Console.ForegroundColor = moveColor;
+                        Console.SetCursorPosition(29, 12);
+                        Console.Write("#");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.SetCursorPosition(0, 20);
+                        WriteCool(new string[] { "As you can see, the red Swordsman is within range to be attacked.", "Try attacking the unit." }, tutCharSpeed, tutRowSpeed);
+                        Console.WriteLine();
+                        while (true)
+                        {
+                            Console.ForegroundColor = inputColor;
+                            string tutorialTestInput2 = Console.ReadLine();
+                            if (tutorialTestInput2 == "attack c2" || tutorialTestInput2 == "attack C2" || tutorialTestInput2 == "Attack c2" || tutorialTestInput2 == "Attack C2")
+                            {
+                                TutorialClearMovable(true);
+                                Console.SetCursorPosition(19, 10);
+                                Console.ForegroundColor = unitFriendlyColor;
+                                Console.Write("P");
+                                Console.SetCursorPosition(19, 11);
+                                Console.Write("24");
+                                Console.SetCursorPosition(0, 20);
+                                Console.Write("Pikeman");
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Write(" attacks ");
+                                Console.ForegroundColor = unitEnemyColor;
+                                Console.Write("Swordsman");
+                                Console.ForegroundColor = ConsoleColor.White;
+                                Console.Write(" dealing 10 damage, Swordsman looses 1 troop.");
+                                Thread.Sleep(500);
+                                Console.WriteLine();
+                                WriteCool(new string[] {"As you can see, the Pikeman automatically moved to a tile adjacent to that of the target.",
+                                            "You are able to specify which cell you wish your unit to attack from by adding that cell to the input command.","Example:" }, tutCharSpeed, tutRowSpeed);
+                                Console.ForegroundColor = inputColor;
+                                WriteCool(new string[] { "attack c2 b1" }, tutCharSpeed, tutRowSpeed);
+                                Console.ForegroundColor = ConsoleColor.White;
+                                WriteCool(new string[] { " ", " ", "Press any key to continue..." }, tutCharSpeed, tutRowSpeed);
+                                Console.ReadKey();
+                                break;
+                            }
+                            else
+                            {
+                                IncorrectInput("Hmm, that didn't work. Remember, to attack a unit you type attack x. Replace the x with the cell where the unit you wish to attack is located.");
+                            }
+                        }
+
+                        // Input 5
+                        Console.Clear();
+                        WriteCool(new string[] { "Hold", "", "By typing " }, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = inputColor;
+                        WriteCool(new string[] { "hold" }, tutCharSpeed, tutRowSpeed);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        WriteCool(new string[] { ", you can choose to skip the turn of the unit." }, tutCharSpeed, tutRowSpeed);
+                        WriteCool(new string[] { "", "", "Info", "", "You can select a cell to add to this command that holds a unit, you will then see that unit's stats." }, tutCharSpeed, tutRowSpeed);
+                        WriteCool(new string[] { "", "", "Help", "", "Help Can be used to show all available commands, and how to type them." }, tutCharSpeed, tutRowSpeed);
+                        WriteCool(new string[] { " ", " ", "Press any key to continue..." }, tutCharSpeed, tutRowSpeed);
+                        Console.ReadKey();
                         break;
                     case ConsoleKey.D3:
                     case ConsoleKey.NumPad3:
+                        Console.Clear();
+                        WriteCool(new string[] {
+                        "There are 3 types of units.",
+                        " ",
+                        "These are:"}, tutCharSpeed, tutRowSpeed);
+                        WriteCool(new string[] {" ","Pikeman (P)",
+                        "Archer (Ar)",
+                        "Swordsman (S)"}, tutCharSpeed, tutRowSpeed);
+                        Thread.Sleep(2000);
+                        WriteCool(new string[] { " ", " ", "Press any key to continue..." }, tutCharSpeed, tutRowSpeed);
+                        Console.ReadKey();
+                        Console.Clear();
+
+                        WriteCool(new string[] {"Each unit type has a number of stats, these are:",
+                            "", "Attack: A range of how much the unit can damage in melee attacks.",
+                            "Defense: How much the unit takes away from incoming attacks.",
+                            "Haste: Determines the units placement in the turn and how far the unit can travel on the map in one turn.",
+                            "HP: How much health points one unit has.",
+                            "Amount: How many units there are.",
+                            "Ranged Attack: A range of how much the unit can damage in ranged attacks",
+                            "Ammo: How many ranged shots the unit has."}, tutCharSpeed, tutRowSpeed);
+                        Thread.Sleep(2000);
+                        WriteCool(new string[] { " ", " ", " ", "Press any key to continue..." }, tutCharSpeed, tutRowSpeed);
+                        Console.ReadKey();
+                        Console.Clear();
                         break;
                     case ConsoleKey.D4:
                     case ConsoleKey.NumPad4:
+                        titleRowSpeed = 0;
+                        Console.Clear();
+                        StartScreen();
                         break;
 
                 }
 
-                Console.SetCursorPosition(0, 21);
-                DeleteCurrentLine();
-                Console.SetCursorPosition(0, 20);
-                Console.ForegroundColor = ConsoleColor.White;
-                DeleteCurrentLine();
-                WriteCool(new string[] { "Great job! :D", " ", "As you can see, the turn has now passed onto the red Swordsman.",
-                    "This is because every turn, your unit can only perform 1 action." }, tutCharSpeed, tutRowSpeed);
-                Console.ReadKey();
-
-                // Input 4 (Attack)
-                Console.Clear();
-                Console.WriteLine("Attack");
-                WriteCool(new string[] {" ", "Whenever you are close enough to attack an enemy, a yellow " + '\u0022' + "#" + '\u0022' + " will appear beneath them.",
-                                        "You can then choose to attack them by typing: "}, tutCharSpeed,tutRowSpeed);
-                Console.ForegroundColor = inputColor;
-                WriteCool(new string[] {"attack x" }, tutCharSpeed,tutRowSpeed);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine();
-                WriteCool(new string[] {"You would however replace the x with the cell where the unit you wish to attack is located. Example: " }, tutCharSpeed,tutRowSpeed);
-                Console.ForegroundColor = inputColor;
-                WriteCool(new string[] { "attack C4" }, tutCharSpeed, tutRowSpeed);
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine();
-                WriteCool(new string[] { "Press any key to continue...." }, tutCharSpeed, tutRowSpeed);
-                Console.ReadKey();
-                Console.Clear();
-
-                Console.ForegroundColor = gridColor;
-                foreach (string line in tutorialLines)
-                {
-                    Console.WriteLine(line);
-                }
-                Console.SetCursorPosition(8, 5);
-                Console.ForegroundColor = moveColor;
-                Console.Write("(");
-                Console.ForegroundColor = unitFriendlyColor;
-                Console.Write("P");
-                Console.ForegroundColor = moveColor;
-                Console.Write(")");
-                Console.SetCursorPosition(9, 6);
-                Console.ForegroundColor = unitFriendlyColor;
-                Console.Write("24");
-                Console.SetCursorPosition(9 + 10, 5);
-                Console.ForegroundColor = moveColor;
-                Console.Write("x");
-                Console.SetCursorPosition(9 + 10, 10);
-                Console.Write("x");
-                Console.SetCursorPosition(9, 10);
-                Console.Write("x");
-                Console.SetCursorPosition(29, 10);
-                Console.ForegroundColor = unitEnemyColor;
-                Console.Write("S");
-                Console.SetCursorPosition(29, 11);
-                Console.Write("9");
-                Console.ForegroundColor = moveColor;
-                Console.SetCursorPosition(29, 12);
-                Console.Write("#");
-
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.SetCursorPosition(0, 20);
-                WriteCool(new string[] {"As you can see, the red Swordsman is within range to be attacked.", "Try attacking the unit." },tutCharSpeed,tutRowSpeed);
-                Console.WriteLine();
-                string tutorialTestInput2 = Console.ReadLine();
-
-
             }
 
-            static void TutorialClearMovable()
+            static void TutorialClearMovable(bool attacking = false)
             {
                 Console.SetCursorPosition(8, 5);
                 Console.Write("   ");
@@ -700,11 +806,28 @@ namespace TextBased_Test2
                 Console.Write(" ");
                 Console.SetCursorPosition(9, 10);
                 Console.Write(" ");
-                Console.SetCursorPosition(38, 15);
-                Console.Write("(");
-                Console.SetCursorPosition(40, 15);
-                Console.Write(")");
-                Console.SetCursorPosition(0, 20);
+                if (!attacking)
+                {
+                    Console.SetCursorPosition(38, 15);
+                    Console.Write("(");
+                    Console.SetCursorPosition(40, 15);
+                    Console.Write(")");
+                    Console.SetCursorPosition(0, 20);
+                }
+                else
+                {
+                    Console.ForegroundColor = unitEnemyColor;
+                    Console.SetCursorPosition(29, 11);
+                    Console.Write("8");
+                    Console.ForegroundColor = moveColor;
+                    Console.SetCursorPosition(28, 10);
+                    Console.Write("(");
+                    Console.SetCursorPosition(30, 10);
+                    Console.Write(")");
+                    Console.ForegroundColor = moveColor;
+                    Console.SetCursorPosition(29, 12);
+                    Console.Write(" ");
+                }
             }
 
         }
@@ -1098,18 +1221,33 @@ namespace TextBased_Test2
                     {
                         int moveColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]) - 1;
                         int moveRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
+
+                        int attackColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]);
+                        int attackRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
+
                         if (attackInput.Length == 3)
                         {
                             moveColumnNumber = ConvertColumn(attackInput[2].ToCharArray()[0]);
                             moveRow = int.Parse(attackInput[2].ToCharArray()[1].ToString()) - 1;
                         }
-                        else
+                         else
                         {
-                            moveColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]) - 1;
-                            moveRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
+                            foreach (Neighbor neighbor in unit.Cell.Neighbors)
+                            {
+                                if (neighbor.Cell.Row == attackRow && neighbor.Cell.ColumnNumber == attackColumnNumber)
+                                {
+                                    moveColumnNumber = unit.Cell.ColumnNumber;
+                                    moveRow = unit.Cell.Row;
+                                    break;
+                                }
+                                else
+                                {
+                                    moveColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]) - 1;
+                                    moveRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
+                                }
+                            }
                         }
-                        int attackColumnNumber = ConvertColumn(attackInput[1].ToCharArray()[0]);
-                        int attackRow = int.Parse(attackInput[1].ToCharArray()[1].ToString()) - 1;
+                        
 
                         if (mainGrid.Cells[attackColumnNumber, attackRow].Unit != null)
 
@@ -1198,6 +1336,28 @@ namespace TextBased_Test2
                     {
                         IncorrectInput("Please input a correct input.");
                     }
+                }
+                else if (input == "help" ||input == "Help")
+                {
+                    Console.SetCursorPosition(0, 30);
+                    DeleteCurrentLine();
+                    Console.ForegroundColor = mainTextColor;
+                    WriteCool(new string[] {"Available inputs are:",
+                                            "move x - replace x with cell, example move a2",
+                                            "attack x y - replace x with cell you wish to attack, replace y with cell you wish to attack from, y is optional.",
+                                            "hold - the unit does nothing this turn and holds its current position.",
+                                            "help - brings up available commands",
+                                            "info x - display the unit in cell x in the infobox.",
+                                            "",
+                                            "Press any key to return to game."}, 0, 25);
+                    Console.ReadKey(); 
+                    Console.SetCursorPosition(0, 30);
+                    DeleteCurrentLine();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Console.WriteLine("                                                                                                                    ");
+                    }
+                    Console.SetCursorPosition(0, 30);
                 }
             }
         }
@@ -1303,9 +1463,12 @@ namespace TextBased_Test2
                 {
                     if (startGrid.ShortestPath[i].StopCells.Count != 0)
                     {
-                        stopLocation[1] = startGrid.ShortestPath[i].StopCells[0].Row;
-                        stopLocation[0] = ConvertColumn(startGrid.ShortestPath[i].StopCells[0].Column);
-                        pathIndex = i;
+                        if (startGrid.ShortestPath[i].StopCells[0].IsEmpty)
+                        {
+                            stopLocation[1] = startGrid.ShortestPath[i].StopCells[0].Row;
+                            stopLocation[0] = ConvertColumn(startGrid.ShortestPath[i].StopCells[0].Column);
+                            pathIndex = i;
+                        }
                     }
                     else
                     {
@@ -1595,6 +1758,17 @@ namespace TextBased_Test2
                     {
                         //Remove unit
                         WriteInCell(attackedUnit.UnitLocation, ConsoleColor.White);
+                        mainTurn.UnitsTurn.Remove(attackedUnit);
+                        mainGrid.Cells[attackedUnit.Cell.ColumnNumber, attackedUnit.Cell.Row].Unit = null;
+                        mainGrid.Cells[attackedUnit.Cell.ColumnNumber, attackedUnit.Cell.Row].IsEmpty = true;
+                        if (attackedUnit.IsFriendly)
+                        {
+                            friendlyUnits.Remove(attackedUnit);
+                        }
+                        else
+                        {
+                            enemyUnits.Remove(attackedUnit);
+                        }
                     }
                     else
                     {
@@ -1661,7 +1835,21 @@ namespace TextBased_Test2
                 {
                     if (u.Cell.IsReachable)
                     {
-                        _MoveByDijsktra(unit, 0, new int[] { u.UnitLocation[0] + 1, u.UnitLocation[1] }, unit.UnitLocation);
+                        if (u.Cell.Column > unit.Cell.Column)
+                        {
+                            if (mainGrid.Cells[u.UnitLocation[0] - 1, u.UnitLocation[1]].IsEmpty)
+                            {
+                                _MoveByDijsktra(unit, 0, new int[] { u.UnitLocation[0] - 1, u.UnitLocation[1] }, unit.UnitLocation);
+                            }
+                            
+                        }
+                        else
+                        {
+                            if (mainGrid.Cells[u.UnitLocation[0] + 1, u.UnitLocation[1]].IsEmpty)
+                            {
+                                _MoveByDijsktra(unit, 0, new int[] { u.UnitLocation[0] + 1, u.UnitLocation[1] }, unit.UnitLocation);
+                            }
+                        }
                         WriteInCell(unit.UnitLocation, unit.Color);
                         WriteInCell(unit.UnitLocation, unit.Color, $" {unit.Symbol.ToString()}", unit.Amount.ToString());
                         AttackUnit(unit, u);
@@ -1791,6 +1979,16 @@ namespace TextBased_Test2
                     }
                 }
             }
+        }
+
+        static void WinScreen()
+        {
+            Console.Clear();
+
+        }
+        static void LooseScreen()
+        {
+
         }
 
     }
