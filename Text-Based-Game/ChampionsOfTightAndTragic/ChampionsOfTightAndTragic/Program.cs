@@ -211,6 +211,7 @@ namespace TextBased_Test2
             {
                 WriteInCell(mainTurn.UnitsTurn[0].UnitLocation, mainTurn.UnitsTurn[0].Color, $"({mainTurn.UnitsTurn[0].Symbol})", mainTurn.UnitsTurn[0].Amount.ToString());
                 DisplayInfoBox(mainTurn.UnitsTurn[0]);
+                Dijkstra(mainGrid.Cells, mainTurn.UnitsTurn[0].Cell);
 
                 if (mainTurn.UnitsTurn[0].IsFriendly)
                 {
@@ -966,10 +967,11 @@ namespace TextBased_Test2
 
                 }
             }
-            foreach (Cell cell in mainGrid.Cells)
+           /* foreach (Cell cell in mainGrid.Cells)
             {
                 Dijkstra(mainGrid.Cells, cell);
             }
+           */
 
 
             // First Row
@@ -1394,9 +1396,10 @@ namespace TextBased_Test2
             Dictionary<Cell, Cell> prev = new Dictionary<Cell, Cell> { };
             foreach (Cell v in grid)
             {
-                dist.Add(v, 99);
-                prev.Add(v, null);
-                Q.Add(v);
+                    dist.Add(v, 99);
+                    prev.Add(v, null);
+                    Q.Add(v);
+                
             }
             dist[source] = 0;
 
@@ -1410,12 +1413,16 @@ namespace TextBased_Test2
                     Cell neighbor = u.Neighbors[v].Cell;
                     if (Q.Contains(u.Neighbors[v].Cell))
                     {
-                        int alt = dist[u] + u.Neighbors[v].Distance;
-                        if (alt < dist[neighbor])
+                        if (neighbor.IsEmpty)
                         {
-                            dist[neighbor] = alt;
-                            prev[neighbor] = u;
+                            int alt = dist[u] + u.Neighbors[v].Distance;
+                            if (alt < dist[neighbor])
+                            {
+                                dist[neighbor] = alt;
+                                prev[neighbor] = u;
+                            }
                         }
+                        
                     }
                 }
             }
@@ -1423,16 +1430,20 @@ namespace TextBased_Test2
             foreach (Cell otherCell in grid)
             {
                 if (otherCell == source) continue;
-
-                var path = new Path { Cell = otherCell, Distance = dist[otherCell] };
-                source.ShortestPath.Add(path);
-
-                Cell stop = prev[otherCell];
-                while (stop != source)
+                if (otherCell.IsEmpty)
                 {
-                    path.StopCells.Insert(0, stop);
-                    stop = prev[stop];
+                    var path = new Path { Cell = otherCell, Distance = dist[otherCell] };
+                    source.ShortestPath.Add(path);
+
+                    Cell stop = prev[otherCell];
+                    while (stop != source)
+                    {
+                        path.StopCells.Insert(0, stop);
+                        stop = prev[stop];
+                    }
                 }
+
+                
             }
             //source.ShortestPath.Sort((a, b) => a.Distance.CompareTo(b.Distance));
         }
